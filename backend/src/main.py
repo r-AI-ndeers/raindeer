@@ -69,7 +69,14 @@ async def generate_poem(receiver, likes, interests, verseCount, person, fact):
     return {"results": results}
 
 @app.get("/image")
-def image():
+async def image():
     #theme['monsterThemeBg'] = supabase.storage().StorageFileAPI(BUCKET_NAME).get_public_url(FILE_LOCATION)
-    image = supabase.storage().StorageFileAPI('images').get_public_url('uploaded/test.png')
+    #image = supabase.storage().StorageFileAPI('images').get_public_url('uploaded/test.png')
+    image = upload_img()
+    return image
+
+
+def upload_img():
+    file = "test1.jpg"
+    image = supabase.storage().StorageFileAPI('images').download(file)
     return image
