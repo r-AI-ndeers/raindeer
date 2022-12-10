@@ -73,7 +73,7 @@ def init_stable_diffusion(stability_token):
     stability_api = client.StabilityInference(
         key=os.environ['STABILITY_KEY'],
         verbose=True,
-        engine="stable-inpainting-512-v2-0",
+        engine="stable-inpainting-v1-0",
         # Available engines: stable-diffusion-v1 stable-diffusion-v1-5 stable-diffusion-512-v2-0 stable-diffusion-768-v2-0
         # stable-diffusion-512-v2-1 stable-diffusion-768-v2-1 stable-inpainting-v1-0 stable-inpainting-512-v2-0
     )
@@ -90,9 +90,9 @@ def stable_diffusionize(img, mask, prompt, stability_token):
         mask_image=Image.fromarray(mask),
         start_schedule=1,
         guidance_strength=0.25,
-        samples=4,
+        samples=3,
         steps=30,
-        cfg_scale=8.5,
+        cfg_scale=6.5,
         width=512,
         height=512,
         sampler=generation.SAMPLER_K_DPMPP_2M
@@ -119,10 +119,14 @@ def image_pipeline(img_filename):
     mask.save("imgs/mask.jpg")  # just some local backup for debugging
     img, mask = preprocess_imgs(img, mask)
     print("made the masking")
+    input_noun = "cherry"
     prompts = [
-        "A christmas card, with a beautiful person wearing a santa hat, christmas tree in the background",
-        "A beautiful person wearing a santa hat, by the beach, in the background people dancing around a fire",
-        "A beautiful person wearing a santa hat, elves in the background, christmas tree with presents"
+        "a book as a present, with a person wearing a santa hat",
+        "santaclaus, splash art, movie still, cinematic lighting, detailed face, dramatic, octane render, long lens, shallow depth of field, bokeh, anamorphic lens flare, 8k, hyper detailed, 35mm film grain"
+        f"A christmas card, {input_noun}, with a beautiful person wearing a santa hat, ((christmas tree in the background))",
+        f"A person wearing a santa hat, {input_noun}, by the beach, in the background people dancing around a fire",
+        f"A handsome person ((wearing a santa hat)), {input_noun}, surrounded by presents, space ship in the background",
+       f"a beautiful person, ((wearing a christmas hat)), flexing his muscles, {input_noun}, handsome, model, fit, under the stars, moon",
     ]
     all_img_filenames = []
     for prompt in prompts:
@@ -131,4 +135,4 @@ def image_pipeline(img_filename):
         
 
 if __name__ == '__main__':
-    image_pipeline("imgs/Photo on 10.11.22 at 15.23.jpg")
+    image_pipeline("imgs/Photo on 10.12.22 at 18.06.jpg")

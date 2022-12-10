@@ -68,7 +68,6 @@ async def generate_poem(receiver, likes, interests, verseCount, person, fact):
         results.append({"style": style, "poem": result})
     return {"results": results}
 
-
 @app.get("/image")
 def image():
     #theme['monsterThemeBg'] = supabase.storage().StorageFileAPI(BUCKET_NAME).get_public_url(FILE_LOCATION)
