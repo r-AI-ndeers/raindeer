@@ -103,6 +103,8 @@ async def generate_poem(
 def normalise_poem(poem: str) -> str:
     # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc
     normalised_poem = re.sub(r"(Verse|Paragraph) \d+\:?", "", poem)
+    # collapse multiple newlines into one
+    normalised_poem = re.sub(r'\n\s*\n', '\n\n', normalised_poem)
 
     return normalised_poem.strip()
 
