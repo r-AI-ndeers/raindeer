@@ -17,6 +17,7 @@ import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
 def query(filename, API_URL, headers):
     with open(filename, "rb") as f:
         data = f.read()
+        
     response = requests.request("POST", API_URL, headers=headers, data=data)
     return json.loads(response.content.decode("utf-8"))
 
@@ -61,11 +62,11 @@ def init_stable_diffusion(stability_token):
     return stability_api
 
 
-def stable_diffusionize(img, mask, prompts, stability_token):
+def stable_diffusionize(img, mask, prompt, stability_token):
     stability_api = init_stable_diffusion(stability_token)
     
     output = stability_api.generate(
-    prompt=prompts,
+    prompt=prompt,
     init_image=Image.fromarray(img),
     mask_image=Image.fromarray(mask),
     start_schedule=1,
@@ -92,7 +93,7 @@ def stable_diffusionize(img, mask, prompts, stability_token):
             if artifact.type == generation.ARTIFACT_IMAGE:
 
                 img = Image.open(io.BytesIO(artifact.binary))
-                filename = f"{counter}-5-completed.png"
+                filename = f"{prompt[:60]}_{counter}.png"
                 img.save(filename)
                 print(f'saved {filename}')
     return img
@@ -106,11 +107,15 @@ if __name__ == '__main__':
     
     stability_token = os.getenv("STABLITY_TOKEN")
 
-    img_filename = "imgs/sdss-052.jpg"
+    img_filename = "imgs/family5.png"
     
     img = np.array(Image.open(img_filename))
     mask = mask_img(img_filename, API_URL=masking_api_url, headers=masking_api_headers)
     mask.save("imgs/mask.jpg")
     img, mask = preprocess_imgs(img, mask)
-    prompts = "A photo of santa clause, surrounded by presents, christmas tree, and a fireplace, beautiful, harmony, peace, love, joy, happiness, family, friends,"
+    prompts = "A photo of santa claus, surrounded by presents, christmas tree, beautiful, harmony, hd, 4k"
+    stable_diffusionize(img, mask, prompts, stability_token)
+    prompts = "A photo of santa claus by the beach, australia, presents, ocean, waves, beautiful, hd, 4k, great photography, cinematic lightning"
+    stable_diffusionize(img, mask, prompts, stability_token)
+    prompts = "A photo of santa claus surrounded by elves, ornaments, psychedelic, trippy, colorful, beautiful, hd, 4k"
     stable_diffusionize(img, mask, prompts, stability_token)
