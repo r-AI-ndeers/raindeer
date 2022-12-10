@@ -32,10 +32,16 @@ def crop_imgs(img, mask, res=512):
     img = img[:512, :512, :]
     mask = mask[:512, :512]
     return img, mask
+
+def blur_mask(mask, kernel=13):
+    mask = (((cv2.GaussianBlur(mask, (kernel, kernel), cv2.BORDER_DEFAULT)) > 0)
+            * 255).astype(np.uint8)
+    return mask
     
 def preprocess_imgs(img, mask):
     img, mask = resize_imgs(img, mask)
     img, mask = center_imgs(img, mask)
     img, mask = crop_imgs(img, mask)
+    mask = blur_mask(mask)
     return img, mask
 
