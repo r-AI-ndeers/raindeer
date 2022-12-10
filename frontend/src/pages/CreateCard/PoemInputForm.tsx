@@ -33,14 +33,14 @@ type InputTextFieldProps = {
 } & BaseTextFieldProps;
 
 function InputTextField({
-                            title,
-                            field,
-                            subtitle,
-                            control,
-                            formFieldError,
-                            isRequired = false,
-                            ...textFieldProps
-                        }: InputTextFieldProps) {
+    title,
+    field,
+    subtitle,
+    control,
+    formFieldError,
+    isRequired = false,
+    ...textFieldProps
+}: InputTextFieldProps) {
 
     return (
         <Box display={"flex"}>
@@ -117,18 +117,16 @@ export function PoemInputForm({
                                   setViewData
                               }: PoemInputFormProps) {
     const {control, handleSubmit, formState: {errors}} = useForm<UserInput>();
-    // const [isLoading, setIsLoading] = React.useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-redeclare
-    const isLoading = false
+    const [isLoading, setIsLoading] = React.useState(false);
 
     const onSubmit = handleSubmit(async (data) => {
-        // setIsLoading(true);
+        setIsLoading(true);
         const generatedMaterials = await generateMaterials(data);
         if (generatedMaterials) {
             setGeneratedData(generatedMaterials);
         }
         setViewData((prevState) => ({...prevState, from: data.senderName}))
-        // setIsLoading(false);
+        setIsLoading(false);
         setActiveStep("edit")
     });
 

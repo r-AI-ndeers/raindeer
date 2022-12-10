@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, BaseSettings
 import openai
+import re
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
@@ -94,9 +95,16 @@ async def generate_poem(
             frequency_penalty=0,
             presence_penalty=0
         )
-        result = response.choices[0].text
+        result = normalise_poem(response.choices[0].text)
         results.append({"style": style, "poem": result})
     return {"results": results}
+
+
+def normalise_poem(poem: str) -> str:
+    # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc
+    normalised_poem = re.sub(r"(Verse|Paragraph) \d+\:?", "", poem)
+
+    return normalised_poem.strip()
 
 @app.get("/image")
 def image():

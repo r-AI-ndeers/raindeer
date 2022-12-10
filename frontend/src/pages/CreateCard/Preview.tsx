@@ -12,16 +12,24 @@ export function Preview({poem, from}: ViewProps) {
     return (
         <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
             <Typography
-                variant={"h3"}
-                style={{textAlign: "center", fontFamily: "Dancing Script"}}
+                variant={"h4"}
+                style={{
+                    textAlign: "center",
+                    fontFamily: "Dancing Script",
+                    whiteSpace: "pre-line",
+                }}
             >
                 {poem}
             </Typography>
             <Typography
-                variant={"h2"}
-                style={{textAlign: "center", fontFamily: "Dancing Script"}}
+                variant={"h3"}
+                style={{
+                    textAlign: "center",
+                    fontFamily: "Dancing Script",
+                    whiteSpace: "pre-line",
+            }}
             >
-                Merry Christmas!
+                Merry Christmas! <br/>
                 - From {from}
             </Typography>
             <Button
