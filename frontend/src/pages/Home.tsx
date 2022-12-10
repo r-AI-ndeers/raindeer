@@ -25,7 +25,7 @@ export function Home() {
                   Create personalised cards for people dear to you with AI!
               </Typography>
               <Box>
-                  <Button href={"/create"} variant={"contained"} style={{backgroundColor: "#2E7D32"}}>Create a card</Button>
+                  <Button size="large" href={"/create"} variant={"contained"} style={{backgroundColor: "#2E7D32"}}>Create a card</Button>
               </Box>
           </Box>
       </Box>
