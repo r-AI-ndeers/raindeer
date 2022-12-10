@@ -1,7 +1,7 @@
 import React from "react";
 import {CreationStage} from "../../components/Stepper";
 import {Controller, useForm} from "react-hook-form";
-import {Box, Button, TextField} from "@mui/material";
+import {Box, Button, TextField, Typography} from "@mui/material";
 import {GeneratedData} from "./CreateCard";
 import {ViewProps} from "./Preview";
 
@@ -33,6 +33,7 @@ export function PoemEditForm({generatedData, setActiveStep, setViewData}: PoemEd
     return (
         <form onSubmit={onSubmit}>
             <Box width={"400px"} display={"flex"} flexDirection={"column"} gap={"16px"}>
+                <Typography variant={"h5"}>Edit your poem</Typography>
                 <Controller
                     name={"selectedPoem"}
                     control={control}

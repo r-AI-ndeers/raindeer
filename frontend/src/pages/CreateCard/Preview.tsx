@@ -1,5 +1,5 @@
 import React from "react";
-import {Box, Typography} from "@mui/material";
+import {Box, Button, Typography} from "@mui/material";
 
 
 export interface ViewProps {
@@ -10,7 +10,7 @@ export interface ViewProps {
 export function Preview({poem, from}: ViewProps) {
 
     return (
-        <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"16px"}>
+        <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
             <Typography
                 variant={"h3"}
                 style={{textAlign: "center", fontFamily: "Dancing Script"}}
@@ -24,6 +24,14 @@ export function Preview({poem, from}: ViewProps) {
                 Merry Christmas!
                 - From {from}
             </Typography>
+            <Button
+                variant={"contained"}
+                type={"submit"}
+                size={"large"}
+                style={{backgroundColor: "#2E7D32"}}
+            >
+                Publish
+            </Button>
         </Box>
     )
 }

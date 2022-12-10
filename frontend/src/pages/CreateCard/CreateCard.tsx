@@ -1,5 +1,4 @@
 import React from 'react';
-import mainbackground from '../../assets/mainbackground.jpg';
 import {
     Box,
     CssBaseline,
@@ -8,6 +7,8 @@ import {CardStepper, CreationStage} from "../../components/Stepper";
 import {PoemEditForm} from "./PoemEditForm";
 import {PoemInputForm} from "./PoemInputForm";
 import {Preview, ViewProps} from "./Preview";
+import {ImageUpload} from "./ImageUpload";
+import {ImageBackgroundLayout} from "../../components/Layout";
 
 export interface GeneratedData {
     poem: string;
@@ -22,19 +23,9 @@ export function CreateCard() {
     return (
         <div>
             <CssBaseline/>
-            <Box
-                height="100vh"
-                display="flex"
-                alignItems="center"
-                padding={"64px"}
-                flexDirection="column"
-                style={{
-                    backgroundImage: `url(${mainbackground})`,
-                    backgroundSize: "cover",
-                }}
-            >
+            <ImageBackgroundLayout>
                 <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"}
-                     alignItems={"center"} gap={"64px"}>
+                     alignItems={"center"} gap={"32px"}>
                     <CardStepper activeStep={activeStep}/>
                     {activeStep === "input" &&
                         <PoemInputForm
@@ -57,7 +48,7 @@ export function CreateCard() {
                         />
                     }
                 </Box>
-            </Box>
+            </ImageBackgroundLayout>
         </div>
     );
 }

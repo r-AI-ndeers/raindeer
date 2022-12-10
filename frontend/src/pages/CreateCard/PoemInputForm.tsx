@@ -10,8 +10,8 @@ import {
 import React from "react";
 import {CreationStage} from "../../components/Stepper";
 import {GeneratedData} from "./CreateCard";
-import {ViewProps} from "./Preview";
-import {Simulate} from "react-dom/test-utils";
+import { ViewProps} from "./Preview";
+import { ImageUpload } from "./ImageUpload";
 
 interface UserInput {
     recipientName: string;
@@ -101,7 +101,8 @@ export function PoemInputForm({setActiveStep, setGeneratedData, setViewData}: Po
 
     return (
         <form onSubmit={onSubmit}>
-            <Stack direction={"column"} gap={"16px"}>
+            <Stack direction={"column"} gap={"16px"} maxWidth={"600px"}>
+                <Typography variant={"h3"}>Input for poem</Typography>
                 <InputTextField
                     title={"From"}
                     field={"senderName"}
@@ -126,6 +127,7 @@ export function PoemInputForm({setActiveStep, setGeneratedData, setViewData}: Po
                     placeholder={"Bob is a great person who loves to play football. He is a lawyer and is very good at his job."}
                     rows={"3"}
                 />
+                <ImageUpload />
                 <Button
                     disabled={isLoading}
                     variant={"contained"}
