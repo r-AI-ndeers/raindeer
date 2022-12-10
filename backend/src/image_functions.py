@@ -5,6 +5,7 @@ import json
 from PIL import Image
 import base64
 import io
+import matplotlib.pyplot as plt
 import os
 from torchvision.transforms import GaussianBlur
 from dotenv import load_dotenv
@@ -32,8 +33,9 @@ def mask_img(img_path, API_URL, headers):
 
     #define desired labels (could change later on)
     labels = [output[i]['label'] for i in range(len(output))] #collecting all labels from the output
-    not_face_labels = ['background', 'hair.png', 'hat.png', 'ear_r.png', 'ear_l.png'] #descriptions don't match actual labels in the output model, these labels are trial and error
+    not_face_labels = ['background', 'hat.png', 'ear_r.png', 'ear_l.png', 'hair.png'] #descriptions don't match actual labels in the output model, these labels are trial and error
     good_labels = [label for label in labels if label not in not_face_labels] #
+    good_labels.append(['person', 'woman', 'man', 'cat', 'dog'])
 
     #filter only desired labels
     face_masks = []
@@ -49,8 +51,8 @@ def mask_img(img_path, API_URL, headers):
 
     #blurring mask for soft edges
     mask = Image.fromarray(all_masks*255)
-    blur = GaussianBlur(11,20)
-    mask = blur(mask)
+    #blur = GaussianBlur(15,22)
+    #mask = blur(mask)
     return mask
 
 
@@ -60,7 +62,7 @@ def init_stable_diffusion(stability_token):
     stability_api = client.StabilityInference(
     key=os.environ['STABILITY_KEY'],
     verbose=True, 
-    engine="stable-inpainting-v1-0", # Set the engine to use for generation. For SD 2.0 use "stable-diffusion-v2-0".
+    engine="stable-inpainting-512-v2-0", # Set the engine to use for generation. For SD 2.0 use "stable-diffusion-v2-0".
     # Available engines: stable-diffusion-v1 stable-diffusion-v1-5 stable-diffusion-512-v2-0 stable-diffusion-768-v2-0 
     # stable-diffusion-512-v2-1 stable-diffusion-768-v2-1 stable-inpainting-v1-0 stable-inpainting-512-v2-0
 )
@@ -69,18 +71,20 @@ def init_stable_diffusion(stability_token):
 
 def stable_diffusionize(img, mask, prompt, stability_token):
     stability_api = init_stable_diffusion(stability_token)
-    
+    mask = (((cv2.GaussianBlur(mask,(13, 13),cv2.BORDER_DEFAULT))>0)*255).astype(np.uint8)
     output = stability_api.generate(
-    prompt=prompt,
-    init_image=Image.fromarray(img),
-    mask_image=Image.fromarray(mask),
-    start_schedule=1,
-    samples=4,
-    steps=30, 
-    cfg_scale=7.5,
-    width=512,
-    height=512, 
-    sampler=generation.SAMPLER_K_DPMPP_2M)
+        prompt=prompt,
+        init_image=Image.fromarray(img),
+        mask_image=Image.fromarray(mask),
+        start_schedule=1,
+        guidance_strength=0.25,
+        samples=4,
+        steps=30, 
+        cfg_scale=8.5,
+        width=512,
+        height=512, 
+        sampler=generation.SAMPLER_K_DPMPP_2M
+        )
     
     for counter, resp in enumerate(output):
         for artifact in resp.artifacts:
@@ -108,19 +112,28 @@ if __name__ == '__main__':
     load_dotenv()
     huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
     masking_api_url = "https://api-inference.huggingface.co/models/clearspandex/face-parsing"
+    #masking_api_url = "https://api-inference.huggingface.co/models/facebook/detr-resnet-50-panoptic"
+
     masking_api_headers = {"Authorization": f"Bearer {huggingface_token}", "wait_for_model": "True"}
     
     stability_token = os.getenv("STABLITY_TOKEN")
 
-    img_filename = "imgs/family5.png"
+    img_filename = "imgs/Screenshot 2022-11-30 at 17.45.48.png"
     
     img = np.array(Image.open(img_filename))
     mask = mask_img(img_filename, API_URL=masking_api_url, headers=masking_api_headers)
     mask.save("imgs/mask.jpg")
     img, mask = preprocess_imgs(img, mask)
-    prompts = "A photo of santa claus, surrounded by presents, christmas tree, beautiful, harmony, hd, 4k"
+    print("made the masking")
+    # prompts = "A christmas image, santa hat, surrounded by presents, christmas tree, ornaments, mistletoe"
+    # stable_diffusionize(img, mask, prompts, stability_token)
+    # prompts = "A photo of santa claus by the beach, wearing a christmas hat, few presents lying on the beach, ocean, waves"
+    # stable_diffusionize(img, mask, prompts, stability_token)
+    # prompts = "A christmas image, elves, ornaments, psychedelic, trippy, colorful"
+    # stable_diffusionize(img, mask, prompts, stability_token)
+    prompts = "A christmas card, with a beautiful person wearing a santa hat, christmas tree in the background"
     stable_diffusionize(img, mask, prompts, stability_token)
-    prompts = "A photo of santa claus by the beach, australia, presents, ocean, waves, beautiful, hd, 4k, great photography, cinematic lightning"
+    prompts = "A beautiful person wearing a santa hat, by the beach, in the background people dancing around a fire"
     stable_diffusionize(img, mask, prompts, stability_token)
-    prompts = "A photo of santa claus surrounded by elves, ornaments, psychedelic, trippy, colorful, beautiful, hd, 4k"
+    prompts = "A beautiful person wearing a santa hat, elves in the background, christmas tree with presents"
     stable_diffusionize(img, mask, prompts, stability_token)
