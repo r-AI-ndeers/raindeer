@@ -1,7 +1,7 @@
 import React from "react";
 import {CreationStage} from "../../components/Stepper";
 import {Controller, useForm} from "react-hook-form";
-import {Box, Button, TextField, Typography} from "@mui/material";
+import {Box, Button, TextField, ToggleButton, ToggleButtonGroup, Typography} from "@mui/material";
 import {GeneratedData} from "./CreateCard";
 import {ViewProps} from "./Preview";
 
@@ -15,12 +15,30 @@ interface EditDataProps {
     selectedPoem: string;
 }
 
-export function PoemEditForm({generatedData, setActiveStep, setViewData}: PoemEditFormProps) {
-    const {control, handleSubmit} = useForm<EditDataProps>({
+export function PoemEditForm({
+    generatedData,
+    setActiveStep,
+    setViewData
+}: PoemEditFormProps) {
+    const {control, handleSubmit, setValue} = useForm<EditDataProps>({
         defaultValues: {
-            selectedPoem: generatedData.poem,
+            selectedPoem: generatedData.results[0].poem,
         }
     });
+
+    const [selectedStyle, setSelectedStyle] = React.useState<string>(generatedData.results[0].style);
+
+    const handleChange = (
+        event: React.MouseEvent<HTMLElement>,
+        newStyle: string,
+    ) => {
+        setSelectedStyle(newStyle);
+        const newPoem = generatedData.results.find((result) => result.style === newStyle)?.poem
+        if (newPoem) {
+            setValue("selectedPoem", newPoem);
+        }
+    };
+
 
     const onSubmit = handleSubmit(async (data) => {
         setViewData(prevState => ({
@@ -33,7 +51,19 @@ export function PoemEditForm({generatedData, setActiveStep, setViewData}: PoemEd
     return (
         <form onSubmit={onSubmit}>
             <Box width={"400px"} display={"flex"} flexDirection={"column"} gap={"16px"}>
-                <Typography variant={"h5"}>Edit your poem</Typography>
+                <Typography variant={"h4"}>Edit your poem</Typography>
+                <Typography variant={"h5"}>Select style</Typography>
+                <ToggleButtonGroup
+                    color="primary"
+                    value={selectedStyle}
+                    exclusive
+                    onChange={handleChange}
+                    aria-label="Platform"
+                >
+                    {generatedData.results.map((result, index) => (
+                            <ToggleButton value={result.style}>{result.style}</ToggleButton>
+                    ))}
+                </ToggleButtonGroup>
                 <Controller
                     name={"selectedPoem"}
                     control={control}
@@ -52,9 +82,6 @@ export function PoemEditForm({generatedData, setActiveStep, setViewData}: PoemEd
                     type={"submit"}
                     size={"large"}
                     style={{backgroundColor: "#2E7D32"}}
-                    onClick={() => {
-                        setActiveStep("edit")
-                    }}
                 >
                     Preview
                 </Button>
