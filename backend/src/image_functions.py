@@ -15,10 +15,15 @@ import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
 
 
 def query(filename, API_URL, headers):
+
     with open(filename, "rb") as f:
-        data = f.read()
+        img = base64.b64encode(f.read())
         
-    response = requests.request("POST", API_URL, headers=headers, data=data)
+    data  = {}
+    data['inputs'] = img.decode()
+    data['options'] = {'wait_for_model': True}
+    
+    response = requests.request("POST", API_URL, headers=headers, data=json.dumps(data))
     return json.loads(response.content.decode("utf-8"))
 
 
