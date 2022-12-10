@@ -7,9 +7,10 @@ def select_smallest_axis(img):
     
 
 def resize_imgs(img, mask, res=512):
+    mask = np.array(mask)
     resize_factor = img.shape[select_smallest_axis(img)]/res 
     img = cv2.resize(img, (int(img.shape[1]/resize_factor), int(img.shape[0]/resize_factor)))
-    mask = cv2.resize(np.array(mask), (int(img.shape[1]/resize_factor), int(img.shape[0]/resize_factor)))
+    mask = cv2.resize(mask, (int(mask.shape[1]/resize_factor), int(mask.shape[0]/resize_factor)))
     return img, mask
 
 def center_imgs(img, mask):
@@ -28,13 +29,19 @@ def center_imgs(img, mask):
     return img, mask
 
 def crop_imgs(img, mask, res=512):
-    cropped_img = img[:512, :512, :]
-    cropped_mask = mask[:512, :512]
+    img = img[:512, :512, :]
+    mask = mask[:512, :512]
     return img, mask
+
+def blur_mask(mask, kernel=13):
+    mask = (((cv2.GaussianBlur(mask, (kernel, kernel), cv2.BORDER_DEFAULT)) > 0)
+            * 255).astype(np.uint8)
+    return mask
     
 def preprocess_imgs(img, mask):
     img, mask = resize_imgs(img, mask)
     img, mask = center_imgs(img, mask)
     img, mask = crop_imgs(img, mask)
+    mask = blur_mask(mask)
     return img, mask
 
