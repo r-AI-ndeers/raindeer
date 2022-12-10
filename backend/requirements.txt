@@ -4,3 +4,4 @@ pip
 requests
 uvicorn
 python-dotenv
+supabase
