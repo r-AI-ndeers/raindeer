@@ -25,3 +25,5 @@ yarn-error.log*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 .env
+.vscode
+frontend/node_modules/
