@@ -1,0 +1,6 @@
+fastapi==0.88.0
+openai
+pip
+requests
+uvicorn
+python-dotenv
