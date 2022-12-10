@@ -1,19 +1,27 @@
 import cv2
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 def select_smallest_axis(img):
     return 0 if img.shape[0] < img.shape[1] else 1
     
+def extend_img(img):
+    img_large = np.zeros((img.shape[0]*2, img.shape[1]*2, img.shape[2]))
+    
 
-def resize_imgs(img, mask, res=512):
+
+def resize_imgs(img, mask, res=256):
     mask = np.array(mask)
     resize_factor = img.shape[select_smallest_axis(img)]/res 
     img = cv2.resize(img, (int(img.shape[1]/resize_factor), int(img.shape[0]/resize_factor)))
     mask = cv2.resize(mask, (int(mask.shape[1]/resize_factor), int(mask.shape[0]/resize_factor)))
+    
     return img, mask
 
 def center_imgs(img, mask):
+
+    img = cv2.copyMakeBorder(img, 200, 200, 200, 200, cv2.BORDER_CONSTANT, cv2.BORDER_CONSTANT)
+    mask = cv2.copyMakeBorder(mask, 200, 200, 200, 200, cv2.BORDER_CONSTANT, cv2.BORDER_CONSTANT)
     min_x = np.nonzero(mask)[1].min()
     max_x = np.nonzero(mask)[1].max()
     min_y = np.nonzero(mask)[0].min()
