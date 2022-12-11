@@ -25,7 +25,7 @@ masking_api_headers = {
 stability_token = os.getenv("STABLITY_TOKEN")
 aws_key = os.getenv("AWS_KEY")
 aws_secret_key = os.getenv("AWS_SECRET_KEY")
-s3 = S3Uploader('raindeers-bucket', aws_key, aws_secret_key, 'eu-central-1')
+s3_uploader = S3Uploader('raindeers-bucket', aws_key, aws_secret_key, 'eu-central-1')
 
 
 def query(filename, API_URL, headers):
@@ -84,7 +84,7 @@ def init_stable_diffusion(stability_token):
     return stability_api
 
 
-def stable_diffusionize(img, mask, prompt, stability_token, bucket_class):
+def stable_diffusionize(img, mask, prompt, stability_token, s3_uploader):
     stability_api = init_stable_diffusion(stability_token)
 
     
@@ -114,7 +114,7 @@ def stable_diffusionize(img, mask, prompt, stability_token, bucket_class):
                 # print(f'saved {filename}')
                 # filenames.append(filename)
                 # counter += 1
-                url = bucket_class.upload_to_s3(img)
+                url = s3_uploader.upload_to_s3(img)
                 urls.append(url)
                 counter += 1
                 
@@ -141,7 +141,7 @@ def image_pipeline(img_filename):
     ]
     all_img_filenames = []
     for prompt in prompts:
-        filenames = stable_diffusionize(img, mask, prompt, stability_token, s3)
+        filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
         all_img_filenames.append(filenames)
         
 
