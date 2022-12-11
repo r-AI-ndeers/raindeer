@@ -2,12 +2,13 @@ import {Box, Button, IconButton, TextField, Typography} from "@mui/material";
 import React from "react";
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import {FRONTEND_URL} from "../../consts";
 
 export interface PublishProps {
-    sharableUrl: string;
+    cardId: string;
 }
 
-export function Publish({sharableUrl}: PublishProps) {
+export function Publish({cardId}: PublishProps) {
 
     return (
         <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
@@ -19,13 +20,13 @@ export function Publish({sharableUrl}: PublishProps) {
             <TextField
                 id="outlined-read-only-input"
                 style={{backgroundColor: "white"}}
-                value={sharableUrl}
+                value={`${FRONTEND_URL}/card/${cardId}`}
                 InputProps={{
                     readOnly: true,
                     endAdornment: (
                         <IconButton onClick={
                             () => {
-                                navigator.clipboard.writeText(sharableUrl);
+                                navigator.clipboard.writeText(cardId);
                             }
                         }>
                             <ContentCopyIcon/>

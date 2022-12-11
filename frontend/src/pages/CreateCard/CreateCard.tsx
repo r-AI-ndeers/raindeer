@@ -26,6 +26,7 @@ export function CreateCard() {
     const [activeStep, setActiveStep] = React.useState<CreationStage>("input");
     const [generatedData, setGeneratedData] = React.useState<GeneratedData>({generatedPoems: [], generatedImages: []});
     const [viewData, setViewData] = React.useState<ViewData>({poem: "", from: "", image: null});
+    const [cardId, setCardId] = React.useState<string | null>(null);
     console.log(viewData)
 
     return (
@@ -54,12 +55,12 @@ export function CreateCard() {
                             from={viewData.from}
                             image={viewData.image}
                             setActiveStep={setActiveStep}
+                            setCardId={setCardId}
                         />
                     }
-                    {activeStep === "publish" &&
+                    {activeStep === "publish" && cardId !== null &&
                         <Publish
-                            //FIXME
-                            sharableUrl={"http://localhost:3000/card/123"}
+                            cardId={cardId}
                         />
                     }
                 </Box>

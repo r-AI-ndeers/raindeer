@@ -143,8 +143,10 @@ export function PoemInputForm({
 
     const onSubmit = handleSubmit(async (data) => {
         setIsLoading(true);
-        const generatedPoem = await generatePoem(data);
-        const generatedImages = await generateImages(image);
+        const [generatedPoem, generatedImages] = await Promise.all([
+            generatePoem(data),
+            generateImages(image)
+        ])
         if (generatedPoem) {
             setGeneratedData({
                 generatedPoems: generatedPoem.results,

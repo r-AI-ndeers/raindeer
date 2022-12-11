@@ -6,12 +6,14 @@ import {ImageBackgroundLayout} from "../components/Layout";
 interface ViewData {
     poem: string;
     from: string;
+    image: string | null;
 }
 
-function fetchDataForId(id: string) {
+async function fetchDataForId(id: string) {
     return {
         poem: "This is a poem",
-        from: "Maksym"
+        from: "Maksym",
+        image: null,
     }
 
     // return fetch(`${BACKEND_URL}/card/${id}`).then(res => res.json());
@@ -41,6 +43,15 @@ export function ViewCard() {
     return (
         <ImageBackgroundLayout>
             <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
+                {viewData.image !== null && (
+                    <img
+                        style={{
+                            width: "512",
+                            height: "512",
+                        }}
+                        src={viewData.image}
+                    />
+                )}
                 <Typography
                     variant={"h4"}
                     style={{
