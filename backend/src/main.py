@@ -92,7 +92,7 @@ async def generate_poem(
             prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
                                    data.verseCount, data.person, data.fact),
             temperature=0.7,
-            max_tokens=10,
+            max_tokens=1000,
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0
