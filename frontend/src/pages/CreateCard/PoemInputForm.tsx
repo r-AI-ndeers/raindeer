@@ -148,10 +148,9 @@ export function PoemInputForm({
 
     const onSubmit = handleSubmit(async (data) => {
         setIsLoading(true);
-        const [generatedPoem, generatedImages] = await Promise.all([
-            generatePoem(data),
-            generateImages(image)
-        ])
+        const generatedPoem = await generatePoem(data);
+        const generatedImages = await generateImages(image);
+
         if (generatedPoem && generatedImages) {
             setGeneratedData({
                 generatedPoems: generatedPoem.results,
@@ -228,7 +227,7 @@ export function PoemInputForm({
                         {!isLoading ?
                             <Typography>Generate</Typography> :
                             <Box display={"flex"} gap={"4px"} alignItems={"center"}>
-                                <CircularProgress size={"small"}/>
+                                <CircularProgress size={"1rem"}/>
                                 <Typography>Generating...</Typography>
                             </Box>
                         }
