@@ -18,7 +18,7 @@ def count_faces(img):
             minSize=(30, 30))
     return (len(faces))
 
-def resize_imgs(img, mask, res=460):
+def resize_imgs(img, mask, res=300):
     mask = np.array(mask)
     resize_factor = img.shape[select_smallest_axis(img)]/res 
     img = cv2.resize(img, (int(img.shape[1]/resize_factor), int(img.shape[0]/resize_factor)))
@@ -61,9 +61,8 @@ def crop_imgs(img, mask, res=512):
     mask = mask[:512, :512]
     return img, mask
 
-def blur_mask(mask, kernel=13):
-    mask = (((cv2.GaussianBlur(mask, (kernel, kernel), cv2.BORDER_DEFAULT)) > 0)
-            * 255).astype(np.uint8)
+def blur_mask(mask, kernel=17):
+    mask = ((cv2.GaussianBlur(mask, (kernel, kernel), cv2.BORDER_DEFAULT))).astype(np.uint8)
     return mask
     
 def preprocess_imgs(img, mask):
