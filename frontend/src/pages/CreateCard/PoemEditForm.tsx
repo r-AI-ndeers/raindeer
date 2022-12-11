@@ -22,18 +22,18 @@ export function PoemEditForm({
 }: PoemEditFormProps) {
     const {control, handleSubmit, setValue} = useForm<EditDataProps>({
         defaultValues: {
-            selectedPoem: generatedData.results[0].poem,
+            selectedPoem: generatedData.generatedPoems[0].poem,
         }
     });
 
-    const [selectedStyle, setSelectedStyle] = React.useState<string>(generatedData.results[0].style);
+    const [selectedStyle, setSelectedStyle] = React.useState<string>(generatedData.generatedPoems[0].style);
 
     const handleChange = (
         event: React.MouseEvent<HTMLElement>,
         newStyle: string,
     ) => {
         setSelectedStyle(newStyle);
-        const newPoem = generatedData.results.find((result) => result.style === newStyle)?.poem
+        const newPoem = generatedData.generatedPoems.find((result) => result.style === newStyle)?.poem
         if (newPoem) {
             setValue("selectedPoem", newPoem);
         }
@@ -60,7 +60,7 @@ export function PoemEditForm({
                     onChange={handleChange}
                     aria-label="Platform"
                 >
-                    {generatedData.results.map((result, index) => (
+                    {generatedData.generatedPoems.map((result, index) => (
                             <ToggleButton value={result.style}>{result.style}</ToggleButton>
                     ))}
                 </ToggleButtonGroup>

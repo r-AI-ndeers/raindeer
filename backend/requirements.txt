@@ -5,3 +5,4 @@ requests
 uvicorn
 python-dotenv
 supabase
+python-multipart

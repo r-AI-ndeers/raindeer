@@ -33,11 +33,11 @@ const rejectStyle = {
 };
 
 interface ImageUploadProps {
-
+    setImage: (image: File) => void;
 }
 
-export function ImageUpload({}: ImageUploadProps) {
-    const [file, setFile] = React.useState<File | null>(null);
+export function ImageUpload({ setImage }: ImageUploadProps) {
+    const [previewFile, setPreviewFile] = React.useState<File | null>(null);
     const [filePreview, setFilePreview] = React.useState<string | null>(null);
 
     const {
@@ -53,7 +53,9 @@ export function ImageUpload({}: ImageUploadProps) {
         onDrop: acceptedFiles => {
             let file = acceptedFiles[0]
             setFilePreview(URL.createObjectURL(file))
-            setFile(file)
+            // This file is just for the preview and the other image is for the actual upload
+            setPreviewFile(file)
+            setImage(file)
         }
     });
 
@@ -76,17 +78,17 @@ export function ImageUpload({}: ImageUploadProps) {
                 a selfie of yourself or the person who you want to gift the card
                 to.</Typography>
             <Box>
-                {file === null && (
+                {previewFile === null && (
                     // @ts-ignore
                     <div {...getRootProps({className: 'dropzone'})} style={dropboxStyle}>
                         <input {...getInputProps()} />
                         <p>Drag 'n' drop some an image, or click to select files</p>
                     </div>
                 )}
-                {file !== null && filePreview !== null && (
+                {previewFile !== null && filePreview !== null && (
                     <Box display={"flex"} flexDirection={"column"} alignItems={"center"} gap={"8px"}>
                         <IconButton  onClick={() => {
-                            setFile(null)
+                            setPreviewFile(null)
                             setFilePreview(null)
                         }}>
                             <Replay />
@@ -98,7 +100,7 @@ export function ImageUpload({}: ImageUploadProps) {
                                 height: '400px',
                                 objectFit: "cover",
                             }}
-                            alt={file.name}
+                            alt={previewFile.name}
                             loading="lazy"
                         />
                     </Box>

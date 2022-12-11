@@ -16,13 +16,15 @@ interface GeneratedPoem {
 }
 
 export interface GeneratedData {
-    results: GeneratedPoem[];
+    generatedPoems: GeneratedPoem[];
+    // A list of urls
+    generatedImages: string[];
 }
 
 export function CreateCard() {
     // TODO: do everything through a reducer here
     const [activeStep, setActiveStep] = React.useState<CreationStage>("input");
-    const [generatedData, setGeneratedData] = React.useState<GeneratedData>({results: []});
+    const [generatedData, setGeneratedData] = React.useState<GeneratedData>({generatedPoems: [], generatedImages: []});
     const [viewData, setViewData] = React.useState<ViewData>({poem: "", from: ""});
 
     return (

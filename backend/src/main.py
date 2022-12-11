@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, BaseSettings
 import openai
@@ -99,6 +99,15 @@ async def generate_poem(
         results.append({"style": style, "poem": result})
     return {"results": results}
 
+@app.post("/generate/image")
+async def generate_image(
+    file: UploadFile,
+):
+    with open(file.filename, "wb") as buffer:
+        print("Got the file bitch")
+        print(file.filename)
+
+    return {"results": []}
 
 def normalise_poem(poem: str) -> str:
     # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc

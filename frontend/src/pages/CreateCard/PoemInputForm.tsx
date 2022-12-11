@@ -74,7 +74,7 @@ interface PoemInputFormProps {
     setViewData: React.Dispatch<React.SetStateAction<ViewData>>;
 }
 
-interface GenerateEndpointResponse {
+interface GeneratePoemResponse {
     results: { style: string; poem: string; }[];
 }
 
@@ -99,31 +99,56 @@ function userInputToGenerateRequest(userInput: UserInput): GenerateEndpointReque
     }
 }
 
-const generateMaterials = async (userInput: UserInput): Promise<GeneratedData> => {
+const generatePoem = async (userInput: UserInput) => {
     return fetch(`${BACKEND_URL}/generate/poem`, {
         method: "POST",
         headers: {
             "Content-type": "application/json"
         },
         body: JSON.stringify(userInputToGenerateRequest(userInput)),
-    }).then(response => response.json()).then((data: GenerateEndpointResponse) => {
+    }).then(response => response.json()).then((data: GeneratePoemResponse) => {
+        return data
+    });
+}
+
+interface GenerateImageResponse {
+    results: string[];
+}
+
+const generateImages = async (image: File | null) => {
+    if (image === null) {
+        return {results: []}
+    }
+
+    let data = new FormData()
+    data.append('file', image)
+
+    return fetch(`${BACKEND_URL}/generate/image`, {
+      method: 'POST',
+      body: data
+    }).then(response => response.json()).then((data: GenerateImageResponse) => {
         return data
     });
 }
 
 export function PoemInputForm({
-                                  setActiveStep,
-                                  setGeneratedData,
-                                  setViewData
-                              }: PoemInputFormProps) {
+    setActiveStep,
+    setGeneratedData,
+    setViewData
+}: PoemInputFormProps) {
     const {control, handleSubmit, formState: {errors}} = useForm<UserInput>();
+    const [image, setImage] = React.useState<File | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
 
     const onSubmit = handleSubmit(async (data) => {
         setIsLoading(true);
-        const generatedMaterials = await generateMaterials(data);
-        if (generatedMaterials) {
-            setGeneratedData(generatedMaterials);
+        const generatedPoem = await generatePoem(data);
+        const generatedImages = await generateImages(image);
+        if (generatedPoem) {
+            setGeneratedData({
+                generatedPoems: generatedPoem.results,
+                generatedImages: generatedImages.results,
+            });
         }
         setViewData((prevState) => ({...prevState, from: data.senderName}))
         setIsLoading(false);
@@ -179,7 +204,7 @@ export function PoemInputForm({
                 {/*    control={control}*/}
                 {/*    formFieldError={errors.fact}*/}
                 {/*/>*/}
-                <ImageUpload/>
+                <ImageUpload setImage={setImage}  />
                 <Button
                     disabled={isLoading}
                     variant={"contained"}
