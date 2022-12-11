@@ -119,11 +119,6 @@ def generate_image(
 
     return {"results": urls}
 
-
-#@app.get("/image")
-#async def image():
-#    image = upload_img()
-
 def upload_img(img):
     # pass in is_async=True to create an async client
     s3 = boto3.resource(
@@ -137,22 +132,19 @@ def upload_img(img):
 
 
 
-#@app.post("/generate")  
-#async def generate(poemInput: GeneratePoemInput):
-#    poems = generate_poem(poemInput)
-#    images = generate_image(file) # <= Where is this coming from?
-#    id = post_card(poems, images)
-#    return id
-
-
 @app.get("/card")  
 async def card(id):
-    ref = db.reference('cards')
-    card = ref.order_by_child('id').equal_to(id).get()
-    return card
+    try:
+        ref = db.reference('cards')
+        card = ref.order_by_child('id').equal_to(id).get()
+        items = list(card.items())
+        return items[0][1]
+    except Exception as e:
+        return {}
+
 
 @app.post("/publish")
-async def publish(poem, sender, image): # from not ideal term for python variable....
+async def publish(poem, sender, image):
     id = str(uuid.uuid4())
     ref = db.reference("/cards")
     values = {"id": id, "poem": poem, "sender": sender, "image": image}
