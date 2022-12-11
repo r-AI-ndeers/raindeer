@@ -6,11 +6,11 @@ import base64
 import io
 import os
 from dotenv import load_dotenv
-from image_preprocessing import preprocess_imgs
+from .image_preprocessing import preprocess_imgs
 import time
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-from s3_functions import S3Uploader
+from .s3_functions import S3Uploader
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -122,7 +122,7 @@ def stable_diffusionize(img, mask, prompt, stability_token, s3_uploader):
 
 
 
-def image_pipeline(img_filename):
+def image_pipeline(img_filename, multithreading_flag=True):
 
     img = np.array(Image.open(img_filename))
     mask = mask_img(img_filename, API_URL=masking_api_url,
@@ -131,27 +131,38 @@ def image_pipeline(img_filename):
     img, mask = preprocess_imgs(img, mask)
     print("made the masking")
     prompts = [
+        f"Beautiful person, oil painting, ((wearing a christmas hat)), flexing his muscles, handsome, model, fit, under the stars, moon",
+        "person with reindeer horns, great resolution, forest in background",
         "cyberpunk christmas image. a person with santa hat, christmas tree, this pastel painting by the award - winning children's book author has interesting color contrasts, plenty of details and impeccable lighting. great resolution | hands:-1.0",
-        "Pencil drawing, portrait and gifts, christmassy setting, beach boy, great resolution | hands:-1.0"
-         "Christmassy image, santa hat, oil painting style, beautiful, great resolution | hands:-1.0",
-         f"A person wearing a santa hat, by the beach, great figure, (((dolphins dancing on the beach))), great resolution",
-         f"A handsome person ((wearing a santa hat)), pixel art, surrounded by presents, space ship in the background, great resolution",
-         f"a beautiful person, oil painting, ((wearing a christmas hat)), flexing his muscles,  handsome, model, fit, under the stars, moon, grear resolution",
+        "Pencil drawing, portrait and gifts, christmassy setting, beach boy | hands:-1.0",
+         "Christmassy portrait, in a suit with santa clause hat, oil painting, christmas tree in back",
+         f"A person wearing a santa hat, by the beach, beachwear, great resolution",
+         f"A handsome person ((wearing a santa hat and an ugly christmas sweater)), pixel art, surrounded by presents, space ship in the background",
     ]
     all_img_filenames = []
     threads = []
-    counter = 0
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    if not multithreading_flag:
         for prompt in prompts:
-            threads.append(executor.submit(stable_diffusionize, img, mask, prompt, stability_token, s3_uploader))
-            #filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
-            #all_img_filenames.append(filenames)
+            filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
+            all_img_filenames.append(filenames)
             
-        for task in as_completed(threads):
-            filename = task.result()
-            all_img_filenames.append(filename)
-            counter += 1
-            print(counter)
+    else:
+        
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            
+            for prompt in prompts:
+                threads.append(executor.submit(stable_diffusionize, img, mask, prompt, stability_token, s3_uploader))
+            
+            try:
+                
+                for task in as_completed(threads, timeout=10):
+                    filename = task.result()
+                    all_img_filenames.append(filename)
+                    
+            except Exception as e:
+                print(e)
+                for task in threads:
+                    task.cancel()            
 
     return all_img_filenames
 
