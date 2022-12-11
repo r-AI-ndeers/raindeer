@@ -1,13 +1,16 @@
 from typing import Optional
-
+import json
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel, BaseSettings
 import openai
+import numpy as np
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import uuid
+import time
 import firebase_admin
 from firebase_admin import db
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .image_functions import image_pipeline
 from .poem_functions import generate_prompt, normalise_poem
@@ -65,26 +68,43 @@ def read_root():
     return {"test": "success"}
 
 
+def get_poem(style, data):
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
+                            data.verseCount, data.person, data.fact),
+        temperature=0.7,
+        max_tokens=1000,
+        timeout=1000,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    result = normalise_poem(response.choices[0].text)
+    return {"style": style, "poem": result}
+
 @app.post("/generate/poem")
 def generate_poem(
         data: GeneratePoemInput,
 ):
     promptStyles = ["personal", "ghetto", "shakespeare"]
+    t1 = time.time()
     results = []
-    for style in promptStyles:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
-                                   data.verseCount, data.person, data.fact),
-            temperature=0.7,
-            max_tokens=1000,
-            timeout=1000,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0
-        )
-        result = normalise_poem(response.choices[0].text)
-        results.append({"style": style, "poem": result})
+    threads = []
+    with ThreadPoolExecutor(max_workers=10) as executor:
+
+        for style in promptStyles:
+            threads.append(executor.submit(get_poem, style, data))
+        try:
+            for task in as_completed(threads, timeout=15):
+                results.append(task.result())
+        
+        except Exception as e:
+            print(e)
+            for task in threads:
+                task.cancel()       
+    t2 = time.time()
+    print(f"Time taken for poem generation: {np.round(t2-t1,2)}")
     return {"results": results}
 
 

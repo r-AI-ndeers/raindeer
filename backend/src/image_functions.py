@@ -155,7 +155,7 @@ def image_pipeline(img_filename, multithreading_flag=True):
             
             try:
                 
-                for task in as_completed(threads, timeout=10):
+                for task in as_completed(threads, timeout=15):
                     filenames = task.result()
                     all_img_filenames.extend(filenames)
                     
