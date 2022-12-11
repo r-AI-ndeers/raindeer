@@ -82,7 +82,7 @@ export function ImageUpload({setImage}: ImageUploadProps) {
                     // @ts-ignore
                     <div {...getRootProps({className: 'dropzone'})} style={dropboxStyle}>
                         <input {...getInputProps()} />
-                        <p>Drag 'n' drop some an image, or click to select files</p>
+                        <p>Drag 'n' drop an image, or click to select files</p>
                     </div>
                 )}
                 {previewFile !== null && filePreview !== null && (
