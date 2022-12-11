@@ -1,27 +1,27 @@
 from typing import Optional
-
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, BaseSettings
 import openai
+import re
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from supabase import create_client, Client
 import boto3
 import uuid
+import firebase_admin
+from firebase_admin import db
+import json
+
+from .image_functions import image_pipeline
 
 load_dotenv()
 
 
 class Settings(BaseSettings):
     OPENAI_API_KEY: str = 'OPENAI_API_KEY'
-    SUPABASE_URL: str = 'SUPABASE_URL'
-    SUPABASE_KEY: str = 'SUPABASE_KEY'
-    RDS_USERNAME: str = 'RDS_USERNAME'
-    RDS_PASSWORD: str = 'RDS_PASSWORD'
-    RDS_PORT: str = 'RDS_PORT'
-    RDS_ENDPOINT: str = 'RDS_ENDPOINT'
-    RDS_DB_NAME: str = 'RDS_DB_NAME'
+    AWS_KEY: str = 'AWS_KEY'
+    AWS_SECRET_KEY: str = 'AWS_SECRET_KEY'
+    DB_URL: str = 'DB_URL'
 
     class Config:
         env_file = '.env'
@@ -29,22 +29,20 @@ class Settings(BaseSettings):
 
 settings = Settings()
 openai.api_key = settings.OPENAI_API_KEY
-supabaseUrl = settings.SUPABASE_URL
-supabaseKey = settings.SUPABASE_KEY
-rds_username  = settings.RDS_USERNAME
-rds_password = settings.RDS_PASSWORD
-rds_port = settings.RDS_PORT
-rds_endpoint = settings.RDS_ENDPOINT
-rds_db_name = settings.RDS_DB_NAME
 
-supabase: Client = create_client(supabaseUrl, supabaseKey)
+cred_obj = firebase_admin.credentials.Certificate('/Users/rico.pircklen/personal_coding/hackathon/raindeer/raindeer-96102-firebase-adminsdk-2gsm6-de4bca66c2.json')
+databaseURL = settings.DB_URL
+default_app = firebase_admin.initialize_app(cred_obj, {
+    'databaseURL':databaseURL
+})
 
-
-class Poem(BaseModel):
-    recipientName: str
-    # senderName: str
-    # context: str
-
+class GeneratePoemInput(BaseModel):
+    receiver: str
+    likes: str
+    interests: str
+    verseCount: int
+    person: Optional[str]
+    fact: Optional[str]
 
 app = FastAPI(debug=True)
 
@@ -57,13 +55,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 def read_root():
     return {"test": "success"}
 
 
-@app.post("/", response_class=HTMLResponse)
+#@app.post("/", response_class=HTMLResponse)
 def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, person="",
                     fact=""):
     PROMPT_SIMPLE = "Christmas poem to {}, they likes {} and is interested in {}, {} verses".format(
@@ -79,18 +76,16 @@ def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, pe
         return PROMPT_SIMPLE, ", Shakespeare style Christmas poem."
     return PROMPT_SIMPLE
 
+def normalise_poem(poem: str) -> str:
+    # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc
+    normalised_poem = re.sub(r"(Verse|Paragraph) \d+\:?", "", poem)
+    # collapse multiple newlines into one
+    normalised_poem = re.sub(r'\n\s*\n', '\n\n', normalised_poem)
 
-class GeneratePoemInput(BaseModel):
-    receiver: str
-    likes: str
-    interests: str
-    verseCount: int
-    person: Optional[str]
-    fact: Optional[str]
-
+    return normalised_poem.strip()
 
 @app.post("/generate/poem")
-async def generate_poem(
+def generate_poem(
     data: GeneratePoemInput,
 ):
     promptStyles = ["personal", "ghetto", "shakespeare"]
@@ -106,61 +101,63 @@ async def generate_poem(
             frequency_penalty=0,
             presence_penalty=0
         )
-        result = response.choices[0].text
+        result = normalise_poem(response.choices[0].text)
         results.append({"style": style, "poem": result})
     return {"results": results}
 
-@app.get("/image")
-async def image():
-    #theme['monsterThemeBg'] = supabase.storage().StorageFileAPI(BUCKET_NAME).get_public_url(FILE_LOCATION)
-    #image = supabase.storage().StorageFileAPI('images').get_public_url('uploaded/test.png')
-    image = upload_img()
-    return image
+@app.post("/generate/image")
+def generate_image(
+    file: UploadFile = File(...),
+):
+    file_location = f"{file.filename}"
+    with open(file_location, "wb+") as file_object:
+        file_object.write(file.file.read())
 
-def upload_img():
-    #file = "backend/src/test1.jpg"
-    #image = supabase.storage().StorageFileAPI('images').upload("uploaded/test2.png", file)
-    url = supabaseUrl
-    key = supabaseKey
-    headers = {"apiKey": key, "Authorization": f"Bearer {key}"}
+    urls = image_pipeline(file_location)
 
+    return {"results": urls}
+
+
+#@app.get("/image")
+#async def image():
+#    image = upload_img()
+
+def upload_img(img):
     # pass in is_async=True to create an async client
-    path = "/Users/rico.pircklen/personal_coding/hackathon/raindeer/backend/src/test1.jpg"
-   
-    key='AKIAXYN7CLDZEH77XL34'
-    secret_key='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'
     s3 = boto3.resource(
     service_name='s3',
     region_name='eu-central-1',
-    aws_access_key_id=key,
-    aws_secret_access_key=secret_key
+    aws_access_key_id=settings.AWS_KEY,
+    aws_secret_access_key=settings.AWS_SECRET_KEY
 )
-    s3.Bucket('raindeers-bucket').upload_file(Filename=path, Key='testing_shit.jpg')
-    print(image)
-    return image
+    s3.Bucket('raindeers-bucket').upload_file(Filename=img, Key='testing_shit.jpg')
+    return img
 
-@app.post("/post_card")  
-async def post_card(poem, images):
-    print("STARTING")
+
+
+#@app.post("/generate")  
+#async def generate(poemInput: GeneratePoemInput):
+#    poems = generate_poem(poemInput)
+#    images = generate_image(file) # <= Where is this coming from?
+#    id = post_card(poems, images)
+#    return id
+
+
+@app.get("/card")  
+async def card(id):
+    ref = db.reference('cards')
+    cards = ref.order_by_key().get()
+    for c in cards.items():
+        print(c)
+    return {}
+
+@app.post("/publish")
+async def publish(poem, sender, image): # from not ideal term for python variable....
     id = str(uuid.uuid4())
-    # enter to the RDS
-    engine = psycopg2.connect(
-        database=rds_db_name,
-        user=rds_username,
-        password=rds_password,
-        host=rds_endpoint,
-        port=rds_port
-    )
-    print("XXX")
-    cursor = engine.cursor()
-
-    #query = "INSERT INTO {}(id, poem, images, xxx) VALUES(%s,%s,%s)", (rds_db_name, 'This is a poem', "this is image", "sss")
-    #cursor.execute(query)
-    cursor.execute("""SELECT table_name FROM information_schema.tables
-       WHERE table_schema = 'public'""")
-    for table in cursor.fetchall():
-        print(table)
-    #self.conn.commit()
-    #self.close()
-    print('opened database successfully')
+    ref = db.reference("/cards")
+    values = {"id": id, "poem": poem, "sender": sender, "image": image}
+    ref.push().set(values)
     return id
+
+
+

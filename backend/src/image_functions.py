@@ -1,18 +1,16 @@
 import requests
-import cv2
 import numpy as np
 import json
 from PIL import Image
 import base64
 import io
-import matplotlib.pyplot as plt
 import os
-from torchvision.transforms import GaussianBlur
 from dotenv import load_dotenv
-from image_preprocessing import preprocess_imgs
-
+from .image_preprocessing import preprocess_imgs
+import time
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
+from .s3_functions import S3Uploader
 
 load_dotenv()
 huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
@@ -22,6 +20,9 @@ masking_api_url = "https://api-inference.huggingface.co/models/clearspandex/face
 masking_api_headers = {
     "Authorization": f"Bearer {huggingface_token}", "wait_for_model": "True"}
 stability_token = os.getenv("STABLITY_TOKEN")
+aws_key = os.getenv("AWS_KEY")
+aws_secret_key = os.getenv("AWS_SECRET_KEY")
+s3_uploader = S3Uploader('raindeers-bucket', aws_key, aws_secret_key, 'eu-central-1')
 
 
 def query(filename, API_URL, headers):
@@ -80,7 +81,7 @@ def init_stable_diffusion(stability_token):
     return stability_api
 
 
-def stable_diffusionize(img, mask, prompt, stability_token):
+def stable_diffusionize(img, mask, prompt, stability_token, s3_uploader):
     stability_api = init_stable_diffusion(stability_token)
 
     
@@ -97,18 +98,25 @@ def stable_diffusionize(img, mask, prompt, stability_token):
         height=512,
         sampler=generation.SAMPLER_K_DPMPP_2M
     )
-    filenames, counter = [], 0
+    urls, counter = [], 0
     for resp in output:
         for artifact in resp.artifacts:
-            if artifact.type == generation.ARTIFACT_IMAGE:
+            if artifact.finish_reason == generation.FILTER:
+                print("nsfw filter hit")
+            
+            elif artifact.type == generation.ARTIFACT_IMAGE:
                 img = Image.open(io.BytesIO(artifact.binary))
-                filename = f"{prompt[:60]}_{counter}.png"
-                img.save(filename)
-                print(f'saved {filename}')
-                filenames.append(filename)
+                # filename = f"{prompt[:60]}_{counter}.png"
+                # img.save(filename)
+                # print(f'saved {filename}')
+                # filenames.append(filename)
+                # counter += 1
+                url = s3_uploader.upload_to_s3(img)
+                urls.append(url)
                 counter += 1
                 
-    return filenames
+    return urls
+
 
 
 def image_pipeline(img_filename):
@@ -116,23 +124,28 @@ def image_pipeline(img_filename):
     img = np.array(Image.open(img_filename))
     mask = mask_img(img_filename, API_URL=masking_api_url,
                     headers=masking_api_headers)
-    mask.save("imgs/mask.jpg")  # just some local backup for debugging
+    # mask.save("imgs/mask.jpg")  # just some local backup for debugging
     img, mask = preprocess_imgs(img, mask)
     print("made the masking")
-    input_noun = "cherry"
     prompts = [
-        "a book as a present, with a person wearing a santa hat",
-        "santaclaus, splash art, movie still, cinematic lighting, detailed face, dramatic, octane render, long lens, shallow depth of field, bokeh, anamorphic lens flare, 8k, hyper detailed, 35mm film grain"
-        f"A christmas card, {input_noun}, with a beautiful person wearing a santa hat, ((christmas tree in the background))",
-        f"A person wearing a santa hat, {input_noun}, by the beach, in the background people dancing around a fire",
-        f"A handsome person ((wearing a santa hat)), {input_noun}, surrounded by presents, space ship in the background",
-       f"a beautiful person, ((wearing a christmas hat)), flexing his muscles, {input_noun}, handsome, model, fit, under the stars, moon",
+        "cyberpunk christmas image. a person with santa hat, christmas tree, this pastel painting by the award - winning children's book author has interesting color contrasts, plenty of details and impeccable lighting. | hands:-1.0",
+        "Pencil drawing, portrait and gifts, christmassy setting, beach boy | hands:-1.0"
+         "Christmassy image, santa hat, oil painting style, beautiful| hands:-1.0",
+         f"A person wearing a santa hat, by the beach, great figure, (((dolphins dancing on the beach)))",
+         f"A handsome person ((wearing a santa hat)), pixel art, surrounded by presents, space ship in the background",
+         f"a beautiful person, oil painting, ((wearing a christmas hat)), flexing his muscles,  handsome, model, fit, under the stars, moon",
     ]
     all_img_filenames = []
     for prompt in prompts:
-        filenames = stable_diffusionize(img, mask, prompt, stability_token)
+        filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
         all_img_filenames.append(filenames)
-        
+
+    # flatten array since there are multiple images per prompt
+    return [img for prompt_images in all_img_filenames for img in prompt_images]
 
 if __name__ == '__main__':
-    image_pipeline("imgs/Photo on 10.12.22 at 18.06.jpg")
+    start_time = time.time()
+    filenames = image_pipeline("imgs/Screenshot 2022-11-30 at 17.45.48.png")
+    end_time = time.time()
+    print(f"image pipeline took: {np.round(end_time - start_time, 2)} seconds")
+    print(filenames)

@@ -1,8 +1,8 @@
 import {Step, StepLabel, Stepper} from "@mui/material";
 
-const steps = ["Personalise card", "Edit", "Review"];
+const steps = ["Personalise card", "Edit", "Review", "Publish"];
 
-export type CreationStage = "input" | "edit"  | "preview"
+export type CreationStage = "input" | "edit"  | "preview" | "publish"
 
 function stepToNumber(step: CreationStage): number {
     switch (step) {
@@ -12,6 +12,8 @@ function stepToNumber(step: CreationStage): number {
             return 1
         case "preview":
             return 2;
+        case "publish":
+            return 3;
         default:
             return 0;
     }

@@ -15,6 +15,7 @@ export function ImageBackgroundLayout({children}: {children: React.ReactNode}) {
                 backgroundImage: `url(${mainbackground})`,
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
                 backgroundAttachment: "fixed",
             }}
         >
