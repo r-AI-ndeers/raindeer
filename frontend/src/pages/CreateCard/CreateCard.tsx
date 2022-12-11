@@ -25,7 +25,8 @@ export function CreateCard() {
     // TODO: do everything through a reducer here
     const [activeStep, setActiveStep] = React.useState<CreationStage>("input");
     const [generatedData, setGeneratedData] = React.useState<GeneratedData>({generatedPoems: [], generatedImages: []});
-    const [viewData, setViewData] = React.useState<ViewData>({poem: "", from: ""});
+    const [viewData, setViewData] = React.useState<ViewData>({poem: "", from: "", image: null});
+    console.log(viewData)
 
     return (
         <div>
@@ -51,6 +52,7 @@ export function CreateCard() {
                         <Preview
                             poem={viewData.poem}
                             from={viewData.from}
+                            image={viewData.image}
                             setActiveStep={setActiveStep}
                         />
                     }
