@@ -35,7 +35,7 @@ export function Preview({poem, from, image, setActiveStep, setCardId}: PreviewPr
     }
 
     return (
-        <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
+        <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
             {image !== null && (
                 <img
                     style={{

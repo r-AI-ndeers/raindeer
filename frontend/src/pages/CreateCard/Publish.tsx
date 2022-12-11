@@ -14,7 +14,7 @@ export function Publish({cardId}: PublishProps) {
     const url = `${FRONTEND_URL}/card/${cardId}`
 
     return (
-        <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
+        <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
             <Box display={"flex"} alignItems={"center"} gap={"8px"}>
                 <CheckCircleOutlineIcon style={{fontSize: "100px", color: primaryColor}}/>
                 <Typography variant={"h4"} style={{color: primaryColor}}>Congratulations, your card is ready!</Typography>

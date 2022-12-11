@@ -217,7 +217,7 @@ export function PoemInputForm({
                 {/*    formFieldError={errors.fact}*/}
                 {/*/>*/}
                 <ImageUpload setImage={setImage}  />
-                <Box display={"flex"} justifyContent={"center"}>
+                <Box display={"flex"} flexDirection={"column"} alignItems={"center"} justifyContent={"center"}>
                     <Button
                         disabled={isLoading}
                         variant={"contained"}
@@ -225,8 +225,15 @@ export function PoemInputForm({
                         size={"large"}
                         style={{backgroundColor: isLoading ? "grey" : primaryColor}}
                     >
-                        {!isLoading ? <Typography>Next</Typography> : <CircularProgress/>}
+                        {!isLoading ?
+                            <Typography>Generate</Typography> :
+                            <Box display={"flex"} gap={"4px"} alignItems={"center"}>
+                                <CircularProgress/>
+                                <Typography>Generating...</Typography>
+                            </Box>
+                        }
                     </Button>
+                    <Typography>(Generation can take up to a minute)</Typography>
                 </Box>
                 <Typography variant={"body1"} color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
             </Stack>

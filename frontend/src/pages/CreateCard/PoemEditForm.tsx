@@ -55,7 +55,7 @@ export function PoemEditForm({
 
     return (
         <form onSubmit={onSubmit}>
-            <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"16px"}>
+            <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"} gap={"16px"}>
                 <Typography variant={"h4"}>Edit your poem</Typography>
                 <Typography variant={"h5"}>Select style</Typography>
                 <ToggleButtonGroup
