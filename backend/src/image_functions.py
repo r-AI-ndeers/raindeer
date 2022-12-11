@@ -1,7 +1,7 @@
 import requests
 import numpy as np
 import json
-from PIL import Image
+from PIL import Image, ImageOps
 import base64
 import io
 import os
@@ -123,8 +123,11 @@ def stable_diffusionize(img, mask, prompt, stability_token, s3_uploader):
 
 
 def image_pipeline(img_filename, multithreading_flag=True):
+    img = Image.open(img_filename)
+    # Fix the exif orientation
+    img = ImageOps.exif_transpose(img)
 
-    img = np.array(Image.open(img_filename))
+    img = np.array(img)
     mask = mask_img(img_filename, API_URL=masking_api_url,
                     headers=masking_api_headers)
     # mask.save("imgs/mask.jpg")  # just some local backup for debugging
