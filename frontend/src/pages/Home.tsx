@@ -12,7 +12,7 @@ export function Home() {
             <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"}
                  alignItems={"center"} gap={"64px"}>
                 <Typography variant="h1">
-                    <b>rAIndeer</b>
+                    <b>rAIndeers</b>
                 </Typography>
                 <Typography variant="h3">
                     Create personalised cards for people dear to you with AI!
