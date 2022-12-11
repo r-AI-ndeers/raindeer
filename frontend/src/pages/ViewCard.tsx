@@ -2,21 +2,18 @@ import React from "react";
 import {Box, Typography} from "@mui/material";
 import {useParams} from "react-router-dom";
 import {ImageBackgroundLayout} from "../components/Layout";
+import {BACKEND_URL} from "../consts";
 
 interface ViewData {
     poem: string;
-    from: string;
+    sender: string;
     image: string | null;
 }
 
 async function fetchDataForId(id: string) {
-    return {
-        poem: "This is a poem",
-        from: "Maksym",
-        image: null,
-    }
-
-    // return fetch(`${BACKEND_URL}/card/${id}`).then(res => res.json());
+    return fetch(`${BACKEND_URL}/cards/${id}`).then(res => res.json()).then((data) => {
+        return data;
+    })
 }
 
 export function ViewCard() {
@@ -27,7 +24,11 @@ export function ViewCard() {
     React.useEffect(() => {
         const fetchData = async () => {
             const data = await fetchDataForId(id ?? "");
-            setViewData(data);
+            setViewData({
+                poem: data.poem,
+                sender: data.sender,
+                image: data.image || null,
+            });
         }
         fetchData()
     }, [id]);
@@ -71,7 +72,7 @@ export function ViewCard() {
                     }}
                 >
                     Merry Christmas! <br/>
-                    - From {viewData.from}
+                    - From {viewData.sender}
                 </Typography>
             </Box>
         </ImageBackgroundLayout>

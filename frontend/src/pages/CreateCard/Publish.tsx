@@ -10,6 +10,8 @@ export interface PublishProps {
 
 export function Publish({cardId}: PublishProps) {
 
+    const url = `${FRONTEND_URL}/card/${cardId}`
+
     return (
         <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
             <Box display={"flex"} alignItems={"center"} gap={"8px"}>
@@ -20,13 +22,13 @@ export function Publish({cardId}: PublishProps) {
             <TextField
                 id="outlined-read-only-input"
                 style={{backgroundColor: "white"}}
-                value={`${FRONTEND_URL}/card/${cardId}`}
+                value={url}
                 InputProps={{
                     readOnly: true,
                     endAdornment: (
                         <IconButton onClick={
                             () => {
-                                navigator.clipboard.writeText(cardId);
+                                navigator.clipboard.writeText(url);
                             }
                         }>
                             <ContentCopyIcon/>

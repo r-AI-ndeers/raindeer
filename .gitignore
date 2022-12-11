@@ -32,3 +32,5 @@ firebase_secret.json
 
 # Local Netlify folder
 .netlify
+
+firebase_secret.json

@@ -34,8 +34,9 @@ openai.api_key = settings.OPENAI_API_KEY
 cred_obj = firebase_admin.credentials.Certificate(settings.FIREBASE_PATH)
 databaseURL = settings.DB_URL
 default_app = firebase_admin.initialize_app(cred_obj, {
-    'databaseURL':databaseURL
+    'databaseURL': databaseURL
 })
+
 
 class GeneratePoemInput(BaseModel):
     receiver: str
@@ -44,6 +45,7 @@ class GeneratePoemInput(BaseModel):
     verseCount: int
     person: Optional[str]
     fact: Optional[str]
+
 
 app = FastAPI(debug=True)
 
@@ -56,12 +58,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def read_root():
     return {"test": "success"}
 
 
-#@app.post("/", response_class=HTMLResponse)
+# @app.post("/", response_class=HTMLResponse)
 def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, person="",
                     fact=""):
     PROMPT_SIMPLE = "Christmas poem to {}, they likes {} and is interested in {}, {} verses".format(
@@ -77,6 +80,7 @@ def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, pe
         return PROMPT_SIMPLE, ", Shakespeare style Christmas poem."
     return PROMPT_SIMPLE
 
+
 def normalise_poem(poem: str) -> str:
     # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc
     normalised_poem = re.sub(r"(Verse|Paragraph) \d+\:?", "", poem)
@@ -85,9 +89,10 @@ def normalise_poem(poem: str) -> str:
 
     return normalised_poem.strip()
 
+
 @app.post("/generate/poem")
 def generate_poem(
-    data: GeneratePoemInput,
+        data: GeneratePoemInput,
 ):
     promptStyles = ["personal", "ghetto", "shakespeare"]
     results = []
@@ -107,9 +112,10 @@ def generate_poem(
         results.append({"style": style, "poem": result})
     return {"results": results}
 
+
 @app.post("/generate/image")
 def generate_image(
-    file: UploadFile = File(...),
+        file: UploadFile = File(...),
 ):
     file_location = f"{file.filename}"
     with open(file_location, "wb+") as file_object:
@@ -122,17 +128,17 @@ def generate_image(
 def upload_img(img):
     # pass in is_async=True to create an async client
     s3 = boto3.resource(
-    service_name='s3',
-    region_name='eu-central-1',
-    aws_access_key_id=settings.AWS_KEY,
-    aws_secret_access_key=settings.AWS_SECRET_KEY
-)
+        service_name='s3',
+        region_name='eu-central-1',
+        aws_access_key_id=settings.AWS_KEY,
+        aws_secret_access_key=settings.AWS_SECRET_KEY
+    )
     s3.Bucket('raindeers-bucket').upload_file(Filename=img, Key='testing_shit.jpg')
     return img
 
 
 
-@app.get("/card")  
+@app.get("/cards/{id}")
 async def card(id):
     try:
         ref = db.reference('cards')
@@ -143,13 +149,18 @@ async def card(id):
         return {}
 
 
+
+class PublishInput(BaseModel):
+    poem: str
+    sender: str
+    image: Optional[str]
+
+
 @app.post("/publish")
-async def publish(poem, sender, image):
+async def publish(publish_input: PublishInput):
     id = str(uuid.uuid4())
     ref = db.reference("/cards")
-    values = {"id": id, "poem": poem, "sender": sender, "image": image}
+    values = {"id": id, "poem": publish_input.poem, "sender": publish_input.sender,
+              "image": publish_input.image}
     ref.push().set(values)
-    return id
-
-
-
+    return {"id": id}
