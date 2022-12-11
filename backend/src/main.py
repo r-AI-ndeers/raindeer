@@ -87,7 +87,7 @@ def get_poem(style, data):
 def generate_poem(
         data: GeneratePoemInput,
 ):
-    promptStyles = ["personal", "ghetto", "shakespeare"]
+    promptStyles = ["personal", "street", "shakespeare"]
     t1 = time.time()
     results = []
     threads = []

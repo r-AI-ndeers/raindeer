@@ -9,7 +9,7 @@ def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, pe
     elif style == "personal":
         return "Write a {} paragraph Christmas poem to {} who is {} and who loves {}. {} is {}.".format(
             verseCount, receiver, person, likes, receiver, fact)
-    elif style == "ghetto":
+    elif style == "street":
         return PROMPT_SIMPLE + ", ghetto style Christmas poem."
     elif style == "shakespeare":
         return PROMPT_SIMPLE, ", Shakespeare style Christmas poem."
