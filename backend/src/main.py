@@ -10,10 +10,13 @@ import uuid
 import time
 import firebase_admin
 from firebase_admin import db
+from revChatGPT.revChatGPT import Chatbot
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .image_functions import image_pipeline
 from .poem_functions import generate_prompt, normalise_poem
+
+import json
 
 load_dotenv()
 
@@ -24,6 +27,9 @@ class Settings(BaseSettings):
     DB_URL: str = 'DB_URL'
     FIREBASE_PATH: str = 'FIREBASE_PATH'
     FIREBASE_JSON: str = 'FIREBASE_JSON'
+    CHATGPT_EMAIL: str = 'CHATGPT_EMAIL'
+    CHATGPT_PASSWORD: str = 'CHATGPT_PASSWORD'
+    MODEL: str = 'MODEL'
 
     #class Config:
     #    env_file = '.env'
@@ -35,6 +41,7 @@ openai.api_key = settings.OPENAI_API_KEY
 firebase_config = settings.FIREBASE_PATH
 if settings.FIREBASE_JSON:
     firebase_config = json.loads(settings.FIREBASE_JSON)
+    
 cred_obj = firebase_admin.credentials.Certificate(firebase_config)
 databaseURL = settings.DB_URL
 default_app = firebase_admin.initialize_app(cred_obj, {
@@ -91,8 +98,26 @@ def generate_poem(
     t1 = time.time()
     results = []
     threads = []
-    with ThreadPoolExecutor(max_workers=10) as executor:
 
+    """if settings.MODEL == "CHATGPT":
+        for style in promptStyles:
+            email = settings.CHATGPT_EMAIL
+            password = settings.CHATGPT_PASSWORD
+            config = {
+            "email": email,
+            "password": password,
+            }
+            chatbot = Chatbot(config, conversation_id=None)
+            response = chatbot.get_chat_response(prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
+                                    data.verseCount, data.person, data.fact), output="text")
+            text = response.get("message")
+
+            result = normalise_poem(text)
+            results.append({"style": style, "poem": result})
+        return {"results": results}
+
+    else:"""
+    with ThreadPoolExecutor(max_workers=10) as executor:
         for style in promptStyles:
             threads.append(executor.submit(get_poem, style, data))
         try:
@@ -102,7 +127,7 @@ def generate_poem(
         except Exception as e:
             print(e)
             for task in threads:
-                task.cancel()       
+                task.cancel()      
     t2 = time.time()
     print(f"Time taken for poem generation: {np.round(t2-t1,2)}")
     return {"results": results}
@@ -149,3 +174,4 @@ async def publish(publish_input: PublishInput):
         return {"id": id}
     except Exception as e:
         return {"id": ""}
+
