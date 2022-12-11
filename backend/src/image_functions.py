@@ -10,7 +10,7 @@ import os
 from torchvision.transforms import GaussianBlur
 from dotenv import load_dotenv
 from image_preprocessing import preprocess_imgs
-
+import time
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
 
@@ -100,7 +100,10 @@ def stable_diffusionize(img, mask, prompt, stability_token):
     filenames, counter = [], 0
     for resp in output:
         for artifact in resp.artifacts:
-            if artifact.type == generation.ARTIFACT_IMAGE:
+            if artifact.finish_reason == generation.FILTER:
+                print("nsfw filter hit")
+            
+            elif artifact.type == generation.ARTIFACT_IMAGE:
                 img = Image.open(io.BytesIO(artifact.binary))
                 filename = f"{prompt[:60]}_{counter}.png"
                 img.save(filename)
@@ -119,14 +122,14 @@ def image_pipeline(img_filename):
     mask.save("imgs/mask.jpg")  # just some local backup for debugging
     img, mask = preprocess_imgs(img, mask)
     print("made the masking")
-    input_noun = "cherry"
     prompts = [
-        "a book as a present, with a person wearing a santa hat",
-        "santaclaus, splash art, movie still, cinematic lighting, detailed face, dramatic, octane render, long lens, shallow depth of field, bokeh, anamorphic lens flare, 8k, hyper detailed, 35mm film grain"
-        f"A christmas card, {input_noun}, with a beautiful person wearing a santa hat, ((christmas tree in the background))",
-        f"A person wearing a santa hat, {input_noun}, by the beach, in the background people dancing around a fire",
-        f"A handsome person ((wearing a santa hat)), {input_noun}, surrounded by presents, space ship in the background",
-       f"a beautiful person, ((wearing a christmas hat)), flexing his muscles, {input_noun}, handsome, model, fit, under the stars, moon",
+
+        "cyberpunk christmas image. a person with santa hat, christmas tree, this pastel painting by the award - winning children's book author has interesting color contrasts, plenty of details and impeccable lighting. | hands:-1.0",
+        "Pencil drawing, portrait and gifts, christmassy setting, beach boy | hands:-1.0"
+         "Christmassy image, santa hat, oil painting style, beautiful| hands:-1.0",
+         f"A person wearing a santa hat, by the beach, great figure, (((dolphins dancing on the beach)))",
+         f"A handsome person ((wearing a santa hat)), pixel art, surrounded by presents, space ship in the background",
+         f"a beautiful person, oil painting, ((wearing a christmas hat)), flexing his muscles,  handsome, model, fit, under the stars, moon",
     ]
     all_img_filenames = []
     for prompt in prompts:
@@ -135,4 +138,7 @@ def image_pipeline(img_filename):
         
 
 if __name__ == '__main__':
-    image_pipeline("imgs/Photo on 10.12.22 at 18.06.jpg")
+    start_time = time.time()
+    image_pipeline("imgs/IMG_20220305_174622_Bokeh.jpg")
+    end_time = time.time()
+    print(f"image pipeline took: {np.round(end_time - start_time, 2)} seconds")
