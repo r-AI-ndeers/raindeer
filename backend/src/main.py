@@ -1,5 +1,4 @@
 from typing import Optional
-
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, BaseSettings
@@ -7,7 +6,11 @@ import openai
 import re
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from supabase import create_client, Client
+import boto3
+import uuid
+import firebase_admin
+from firebase_admin import db
+import json
 
 from .image_functions import image_pipeline
 
@@ -16,8 +19,9 @@ load_dotenv()
 
 class Settings(BaseSettings):
     OPENAI_API_KEY: str = 'OPENAI_API_KEY'
-    SUPABASE_URL: str = 'SUPABASE_URL'
-    SUPABASE_KEY: str = 'SUPABASE_KEY'
+    AWS_KEY: str = 'AWS_KEY'
+    AWS_SECRET_KEY: str = 'AWS_SECRET_KEY'
+    DB_URL: str = 'DB_URL'
 
     class Config:
         env_file = '.env'
@@ -25,19 +29,22 @@ class Settings(BaseSettings):
 
 settings = Settings()
 openai.api_key = settings.OPENAI_API_KEY
-supabaseUrl = settings.SUPABASE_URL
-supabaseKey = settings.SUPABASE_KEY
 
-supabase: Client = create_client(supabaseUrl, supabaseKey)
+cred_obj = firebase_admin.credentials.Certificate('/Users/rico.pircklen/personal_coding/hackathon/raindeer/raindeer-96102-firebase-adminsdk-2gsm6-de4bca66c2.json')
+databaseURL = settings.DB_URL
+default_app = firebase_admin.initialize_app(cred_obj, {
+    'databaseURL':databaseURL
+})
 
+class GeneratePoemInput(BaseModel):
+    receiver: str
+    likes: str
+    interests: str
+    verseCount: int
+    person: Optional[str]
+    fact: Optional[str]
 
-class Poem(BaseModel):
-    recipientName: str
-    # senderName: str
-    # context: str
-
-
-app = FastAPI()
+app = FastAPI(debug=True)
 
 # FIXME: set the right cors in production
 app.add_middleware(
@@ -48,13 +55,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 def read_root():
     return {"test": "success"}
 
 
-@app.post("/", response_class=HTMLResponse)
+#@app.post("/", response_class=HTMLResponse)
 def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, person="",
                     fact=""):
     PROMPT_SIMPLE = "Christmas poem to {}, they likes {} and is interested in {}, {} verses".format(
@@ -70,18 +76,16 @@ def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, pe
         return PROMPT_SIMPLE, ", Shakespeare style Christmas poem."
     return PROMPT_SIMPLE
 
+def normalise_poem(poem: str) -> str:
+    # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc
+    normalised_poem = re.sub(r"(Verse|Paragraph) \d+\:?", "", poem)
+    # collapse multiple newlines into one
+    normalised_poem = re.sub(r'\n\s*\n', '\n\n', normalised_poem)
 
-class GeneratePoemInput(BaseModel):
-    receiver: str
-    likes: str
-    interests: str
-    verseCount: int
-    person: Optional[str]
-    fact: Optional[str]
-
+    return normalised_poem.strip()
 
 @app.post("/generate/poem")
-async def generate_poem(
+def generate_poem(
     data: GeneratePoemInput,
 ):
     promptStyles = ["personal", "ghetto", "shakespeare"]
@@ -103,7 +107,7 @@ async def generate_poem(
     return {"results": results}
 
 @app.post("/generate/image")
-async def generate_image(
+def generate_image(
     file: UploadFile = File(...),
 ):
     file_location = f"{file.filename}"
@@ -114,16 +118,47 @@ async def generate_image(
 
     return {"results": urls}
 
-def normalise_poem(poem: str) -> str:
-    # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc
-    normalised_poem = re.sub(r"(Verse|Paragraph) \d+\:?", "", poem)
-    # collapse multiple newlines into one
-    normalised_poem = re.sub(r'\n\s*\n', '\n\n', normalised_poem)
 
-    return normalised_poem.strip()
+#@app.get("/image")
+#async def image():
+#    image = upload_img()
 
-@app.get("/image")
-def image():
-    image = supabase.storage().StorageFileAPI('images').get_public_url(
-        'uploaded/test.png')
-    return image
+def upload_img(img):
+    # pass in is_async=True to create an async client
+    s3 = boto3.resource(
+    service_name='s3',
+    region_name='eu-central-1',
+    aws_access_key_id=settings.AWS_KEY,
+    aws_secret_access_key=settings.AWS_SECRET_KEY
+)
+    s3.Bucket('raindeers-bucket').upload_file(Filename=img, Key='testing_shit.jpg')
+    return img
+
+
+
+#@app.post("/generate")  
+#async def generate(poemInput: GeneratePoemInput):
+#    poems = generate_poem(poemInput)
+#    images = generate_image(file) # <= Where is this coming from?
+#    id = post_card(poems, images)
+#    return id
+
+
+@app.get("/card")  
+async def card(id):
+    ref = db.reference('cards')
+    cards = ref.order_by_key().get()
+    for c in cards.items():
+        print(c)
+    return {}
+
+@app.post("/publish")
+async def publish(poem, sender, image): # from not ideal term for python variable....
+    id = str(uuid.uuid4())
+    ref = db.reference("/cards")
+    values = {"id": id, "poem": poem, "sender": sender, "image": image}
+    ref.push().set(values)
+    return id
+
+
+
