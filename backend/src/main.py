@@ -1,21 +1,18 @@
 from typing import Optional
+
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, BaseSettings
 import openai
-import re
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-import boto3
 import uuid
 import firebase_admin
 from firebase_admin import db
-import json
 
 from .image_functions import image_pipeline
+from .poem_functions import generate_prompt, normalise_poem
 
 load_dotenv()
-
 
 class Settings(BaseSettings):
     OPENAI_API_KEY: str = 'OPENAI_API_KEY'
@@ -25,8 +22,8 @@ class Settings(BaseSettings):
     FIREBASE_PATH: str = 'FIREBASE_PATH'
     FIREBASE_JSON: str = 'FIREBASE_JSON'
 
-    class Config:
-        env_file = '.env'
+    #class Config:
+    #    env_file = '.env'
 
 
 settings = Settings()
@@ -63,35 +60,9 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.get("/test")
 def read_root():
     return {"test": "success"}
-
-
-# @app.post("/", response_class=HTMLResponse)
-def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, person="",
-                    fact=""):
-    PROMPT_SIMPLE = "Christmas poem to {}, they likes {} and is interested in {}, {} verses".format(
-        receiver, likes, interests, verseCount)
-    if style == "simple":
-        return PROMPT_SIMPLE
-    elif style == "personal":
-        return "Write a {} paragraph Christmas poem to {} who is {} and who loves {}. {} is {}.".format(
-            verseCount, receiver, person, likes, receiver, fact)
-    elif style == "ghetto":
-        return PROMPT_SIMPLE + ", ghetto style Christmas poem."
-    elif style == "shakespeare":
-        return PROMPT_SIMPLE, ", Shakespeare style Christmas poem."
-    return PROMPT_SIMPLE
-
-
-def normalise_poem(poem: str) -> str:
-    # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc
-    normalised_poem = re.sub(r"(Verse|Paragraph) \d+\:?", "", poem)
-    # collapse multiple newlines into one
-    normalised_poem = re.sub(r'\n\s*\n', '\n\n', normalised_poem)
-
-    return normalised_poem.strip()
 
 
 @app.post("/generate/poem")
@@ -129,18 +100,6 @@ def generate_image(
 
     return {"results": urls}
 
-def upload_img(img):
-    # pass in is_async=True to create an async client
-    s3 = boto3.resource(
-        service_name='s3',
-        region_name='eu-central-1',
-        aws_access_key_id=settings.AWS_KEY,
-        aws_secret_access_key=settings.AWS_SECRET_KEY
-    )
-    s3.Bucket('raindeers-bucket').upload_file(Filename=img, Key='testing_shit.jpg')
-    return img
-
-
 
 @app.get("/cards/{id}")
 async def card(id):
@@ -153,7 +112,6 @@ async def card(id):
         return {}
 
 
-
 class PublishInput(BaseModel):
     poem: str
     sender: str
@@ -162,9 +120,12 @@ class PublishInput(BaseModel):
 
 @app.post("/publish")
 async def publish(publish_input: PublishInput):
-    id = str(uuid.uuid4())
-    ref = db.reference("/cards")
-    values = {"id": id, "poem": publish_input.poem, "sender": publish_input.sender,
-              "image": publish_input.image}
-    ref.push().set(values)
-    return {"id": id}
+    try:
+        id = str(uuid.uuid4())
+        ref = db.reference("/cards")
+        values = {"id": id, "poem": publish_input.poem, "sender": publish_input.sender,
+                "image": publish_input.image}
+        ref.push().set(values)
+        return {"id": id}
+    except Exception as e:
+        return {"id": ""}
