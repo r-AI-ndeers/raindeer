@@ -13,6 +13,7 @@ from image_preprocessing import preprocess_imgs
 import time
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
+from s3_functions import S3Uploader
 
 load_dotenv()
 huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
@@ -22,6 +23,9 @@ masking_api_url = "https://api-inference.huggingface.co/models/clearspandex/face
 masking_api_headers = {
     "Authorization": f"Bearer {huggingface_token}", "wait_for_model": "True"}
 stability_token = os.getenv("STABLITY_TOKEN")
+aws_key = os.getenv("AWS_KEY")
+aws_secret_key = os.getenv("AWS_SECRET_KEY")
+s3 = S3Uploader('raindeers-bucket', aws_key, aws_secret_key, 'eu-central-1')
 
 
 def query(filename, API_URL, headers):
@@ -80,7 +84,7 @@ def init_stable_diffusion(stability_token):
     return stability_api
 
 
-def stable_diffusionize(img, mask, prompt, stability_token):
+def stable_diffusionize(img, mask, prompt, stability_token, bucket_class):
     stability_api = init_stable_diffusion(stability_token)
 
     
@@ -97,7 +101,7 @@ def stable_diffusionize(img, mask, prompt, stability_token):
         height=512,
         sampler=generation.SAMPLER_K_DPMPP_2M
     )
-    filenames, counter = [], 0
+    urls, counter = [], 0
     for resp in output:
         for artifact in resp.artifacts:
             if artifact.finish_reason == generation.FILTER:
@@ -105,13 +109,17 @@ def stable_diffusionize(img, mask, prompt, stability_token):
             
             elif artifact.type == generation.ARTIFACT_IMAGE:
                 img = Image.open(io.BytesIO(artifact.binary))
-                filename = f"{prompt[:60]}_{counter}.png"
-                img.save(filename)
-                print(f'saved {filename}')
-                filenames.append(filename)
+                # filename = f"{prompt[:60]}_{counter}.png"
+                # img.save(filename)
+                # print(f'saved {filename}')
+                # filenames.append(filename)
+                # counter += 1
+                url = bucket_class.upload_to_s3(img)
+                urls.append(url)
                 counter += 1
                 
-    return filenames
+    return urls
+
 
 
 def image_pipeline(img_filename):
@@ -133,12 +141,14 @@ def image_pipeline(img_filename):
     ]
     all_img_filenames = []
     for prompt in prompts:
-        filenames = stable_diffusionize(img, mask, prompt, stability_token)
+        filenames = stable_diffusionize(img, mask, prompt, stability_token, s3)
         all_img_filenames.append(filenames)
+        
+
         
 
 if __name__ == '__main__':
     start_time = time.time()
-    image_pipeline("imgs/IMG_20220305_174622_Bokeh.jpg")
+    image_pipeline("imgs/Screenshot 2022-11-30 at 17.45.48.png")
     end_time = time.time()
     print(f"image pipeline took: {np.round(end_time - start_time, 2)} seconds")
