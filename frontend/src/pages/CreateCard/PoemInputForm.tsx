@@ -216,13 +216,14 @@ export function PoemInputForm({
                     formFieldError={errors.fact}
                 />
                 <ImageUpload setImage={setImage}  />
-                <Box display={"flex"} flexDirection={"column"} alignItems={"center"} justifyContent={"center"}>
+                <Box display={"flex"} flexDirection={"column"} alignItems={"center"} justifyContent={"center"} marginTop={"32px"}>
+                    <Typography>(Generation can take up to a minute)</Typography>
                     <Button
                         disabled={isLoading}
                         variant={"contained"}
                         type={"submit"}
                         size={"large"}
-                        style={{backgroundColor: isLoading ? "grey" : primaryColor, marginTop: "32px"}}
+                        style={{backgroundColor: isLoading ? "grey" : primaryColor }}
                     >
                         {!isLoading ?
                             <Typography>Generate</Typography> :
@@ -232,7 +233,6 @@ export function PoemInputForm({
                             </Box>
                         }
                     </Button>
-                    <Typography>(Generation can take up to a minute)</Typography>
                 </Box>
                 <Typography variant={"body1"} color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
             </Stack>

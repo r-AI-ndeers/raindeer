@@ -34,10 +34,11 @@ export function ViewCard() {
     }, [id]);
 
 
-    // FIXME: nicer loading state
     if (viewData === undefined) {
         return (
-            <Typography>Loading...</Typography>
+            <ImageBackgroundLayout>
+                <Typography>Loading...</Typography>
+            </ImageBackgroundLayout>
         );
     }
 
