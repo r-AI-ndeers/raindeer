@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     AWS_SECRET_KEY: str = 'AWS_SECRET_KEY'
     DB_URL: str = 'DB_URL'
     FIREBASE_PATH: str = 'FIREBASE_PATH'
+    FIREBASE_JSON: str = 'FIREBASE_JSON'
 
     class Config:
         env_file = '.env'
@@ -31,7 +32,10 @@ class Settings(BaseSettings):
 settings = Settings()
 openai.api_key = settings.OPENAI_API_KEY
 
-cred_obj = firebase_admin.credentials.Certificate(settings.FIREBASE_PATH)
+firebase_config = settings.FIREBASE_PATH
+if settings.FIREBASE_JSON:
+    firebase_config = json.loads(settings.FIREBASE_JSON)
+cred_obj = firebase_admin.credentials.Certificate(firebase_config)
 databaseURL = settings.DB_URL
 default_app = firebase_admin.initialize_app(cred_obj, {
     'databaseURL': databaseURL
