@@ -1,4 +1,4 @@
-import {Box, Button, IconButton, Typography} from "@mui/material";
+import {Box, IconButton, Typography} from "@mui/material";
 import React, {useMemo} from "react";
 import {useDropzone} from 'react-dropzone';
 import {Replay} from "@mui/icons-material";
@@ -70,7 +70,7 @@ export function ImageUpload({}: ImageUploadProps) {
 
     return (
         <Box display={"flex"} flexDirection={"column"} gap={"16px"}>
-            <Typography variant={"h4"}>Upload an image</Typography>
+            <Typography variant={"h4"}>Upload a selfie</Typography>
             <Typography variant={"body2"}>We will apply special Christmas filters to
                 make your image suit the Christmas spirit! It works best when you upload
                 a selfie of yourself or the person who you want to gift the card

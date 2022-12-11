@@ -7,25 +7,28 @@ import {CardStepper, CreationStage} from "../../components/Stepper";
 import {PoemEditForm} from "./PoemEditForm";
 import {PoemInputForm} from "./PoemInputForm";
 import {Preview, ViewProps} from "./Preview";
-import {ImageUpload} from "./ImageUpload";
 import {ImageBackgroundLayout} from "../../components/Layout";
 
-export interface GeneratedData {
+interface GeneratedPoem {
+    style: string;
     poem: string;
+}
+
+export interface GeneratedData {
+    results: GeneratedPoem[];
 }
 
 export function CreateCard() {
     // TODO: do everything through a reducer here
     const [activeStep, setActiveStep] = React.useState<CreationStage>("input");
-    const [generatedData, setGeneratedData] = React.useState<GeneratedData>({poem: ""});
+    const [generatedData, setGeneratedData] = React.useState<GeneratedData>({results: []});
     const [viewData, setViewData] = React.useState<ViewProps>({poem: "", from: ""});
 
     return (
         <div>
             <CssBaseline/>
             <ImageBackgroundLayout>
-                <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"}
-                     alignItems={"center"} gap={"32px"}>
+                <Box maxWidth={"1024px"} display={"flex"} flexDirection={"column"} alignItems={"center"} gap={"32px"}>
                     <CardStepper activeStep={activeStep}/>
                     {activeStep === "input" &&
                         <PoemInputForm

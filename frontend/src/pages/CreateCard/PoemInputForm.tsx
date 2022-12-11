@@ -10,13 +10,17 @@ import {
 import React from "react";
 import {CreationStage} from "../../components/Stepper";
 import {GeneratedData} from "./CreateCard";
-import { ViewProps} from "./Preview";
-import { ImageUpload } from "./ImageUpload";
+import {ViewProps} from "./Preview";
+import {ImageUpload} from "./ImageUpload";
+import {BACKEND_URL} from "../../consts";
 
 interface UserInput {
     recipientName: string;
     senderName: string;
-    context: string;
+    likes: string;
+    interests: string;
+    person: string;
+    fact: string;
 }
 
 type InputTextFieldProps = {
@@ -25,26 +29,29 @@ type InputTextFieldProps = {
     field: keyof UserInput;
     formFieldError?: FieldError;
     subtitle?: string;
+    isRequired?: boolean;
 } & BaseTextFieldProps;
 
 function InputTextField({
-    title,
-    field,
-    subtitle,
-    control,
-    formFieldError,
-    ...textFieldProps
-}: InputTextFieldProps) {
+                            title,
+                            field,
+                            subtitle,
+                            control,
+                            formFieldError,
+                            isRequired = false,
+                            ...textFieldProps
+                        }: InputTextFieldProps) {
 
     return (
-        <Box width={"400px"}>
+        <Box display={"flex"}>
             <Stack direction={"column"}>
-                <Typography variant={"h5"}>{title}*</Typography>
+                <Typography
+                    variant={"h5"}>{title}{isRequired ? "*" : " (optional)"}</Typography>
                 <Typography variant={"body2"}>{subtitle}</Typography>
                 <Controller
                     name={field}
                     control={control}
-                    rules={{required: true}}
+                    rules={{required: isRequired}}
                     render={({field}) =>
                         <TextField
                             {...field}
@@ -67,35 +74,61 @@ interface PoemInputFormProps {
     setViewData: React.Dispatch<React.SetStateAction<ViewProps>>;
 }
 
-const generateMaterials = async (userInput: UserInput): Promise<GeneratedData> => {
-    // FIXME: remove wait for 5 seconds
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return {poem: "Poem poem bla bla"}
-
-    // return fetch("/api/generate", {
-    //     method: "POST",
-    //     body: JSON.stringify(userInput),
-    // }).then(response => response.json()).then(data => {
-    //     return {
-    //         poem: "Poem poem bla bla"
-    //     }
-    // });
+interface GenerateEndpointResponse {
+    results: { style: string; poem: string; }[];
 }
 
-export function PoemInputForm({setActiveStep, setGeneratedData, setViewData}: PoemInputFormProps) {
+interface GenerateEndpointRequest {
+    receiver: string,
+    likes: string,
+    interests: string,
+    verseCount: number,
+    person: string,
+    fact: string,
+}
+
+function userInputToGenerateRequest(userInput: UserInput): GenerateEndpointRequest {
+    return {
+        receiver: userInput.recipientName,
+        likes: userInput.likes,
+        interests: userInput.interests,
+        // Verse count is just hardcoded to 3 for now
+        verseCount: 3,
+        person: userInput.person,
+        fact: userInput.fact,
+    }
+}
+
+const generateMaterials = async (userInput: UserInput): Promise<GeneratedData> => {
+    return fetch(`${BACKEND_URL}/generate/poem`, {
+        method: "POST",
+        headers: {
+            "Content-type": "application/json"
+        },
+        body: JSON.stringify(userInputToGenerateRequest(userInput)),
+    }).then(response => response.json()).then((data: GenerateEndpointResponse) => {
+        return data
+    });
+}
+
+export function PoemInputForm({
+                                  setActiveStep,
+                                  setGeneratedData,
+                                  setViewData
+                              }: PoemInputFormProps) {
     const {control, handleSubmit, formState: {errors}} = useForm<UserInput>();
-    const [isLoading, setIsLoading] = React.useState(false);
+    // const [isLoading, setIsLoading] = React.useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-redeclare
+    const isLoading = false
 
     const onSubmit = handleSubmit(async (data) => {
-        setIsLoading(true);
+        // setIsLoading(true);
         const generatedMaterials = await generateMaterials(data);
         if (generatedMaterials) {
-            setGeneratedData({
-                poem: generatedMaterials.poem
-            });
+            setGeneratedData(generatedMaterials);
         }
         setViewData((prevState) => ({...prevState, from: data.senderName}))
-        setIsLoading(false);
+        // setIsLoading(false);
         setActiveStep("edit")
     });
 
@@ -107,27 +140,47 @@ export function PoemInputForm({setActiveStep, setGeneratedData, setViewData}: Po
                     title={"From"}
                     field={"senderName"}
                     control={control}
+                    isRequired
                     formFieldError={errors.senderName}
-                    placeholder={"Alice"}
                 />
                 <InputTextField
                     title={"To"}
+                    isRequired
                     field={"recipientName"}
                     control={control}
                     formFieldError={errors.recipientName}
-                    placeholder={"Bob"}
                 />
                 <InputTextField
-                    title={"Provide us some context"}
-                    subtitle={"E.g. what does the person do, their interests, etc."}
-                    field={"context"}
+                    title={"What does this person like?"}
+                    subtitle={"For example “bikes”, “writing poems”, “having fun with friends”, etc."}
+                    field={"likes"}
+                    isRequired
                     control={control}
-                    multiline={true}
-                    formFieldError={errors.context}
-                    placeholder={"Bob is a great person who loves to play football. He is a lawyer and is very good at his job."}
-                    rows={"3"}
+                    formFieldError={errors.likes}
                 />
-                <ImageUpload />
+                <InputTextField
+                    title={"What interests this person?"}
+                    subtitle={"For example “games“ or “coding“."}
+                    field={"interests"}
+                    isRequired
+                    control={control}
+                    formFieldError={errors.interests}
+                />
+                <InputTextField
+                    title={"Who is this person to you?"}
+                    subtitle={"For example “an awesome friend”, “a great colleague”, “my grandma“, etc."}
+                    field={"person"}
+                    control={control}
+                    formFieldError={errors.person}
+                />
+                <InputTextField
+                    title={"Tell us a random fact about this person"}
+                    subtitle={"For example “recently moved, “loves and hates her PhD“, etc."}
+                    field={"fact"}
+                    control={control}
+                    formFieldError={errors.fact}
+                />
+                <ImageUpload/>
                 <Button
                     disabled={isLoading}
                     variant={"contained"}

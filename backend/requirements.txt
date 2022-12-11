@@ -5,3 +5,5 @@ requests
 uvicorn
 python-dotenv
 supabase
+firebase_admin
+boto3
