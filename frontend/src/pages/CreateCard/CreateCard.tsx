@@ -6,8 +6,9 @@ import {
 import {CardStepper, CreationStage} from "../../components/Stepper";
 import {PoemEditForm} from "./PoemEditForm";
 import {PoemInputForm} from "./PoemInputForm";
-import {Preview, ViewProps} from "./Preview";
+import {Preview, ViewData} from "./Preview";
 import {ImageBackgroundLayout} from "../../components/Layout";
+import {Publish} from "./Publish";
 
 interface GeneratedPoem {
     style: string;
@@ -22,7 +23,7 @@ export function CreateCard() {
     // TODO: do everything through a reducer here
     const [activeStep, setActiveStep] = React.useState<CreationStage>("input");
     const [generatedData, setGeneratedData] = React.useState<GeneratedData>({results: []});
-    const [viewData, setViewData] = React.useState<ViewProps>({poem: "", from: ""});
+    const [viewData, setViewData] = React.useState<ViewData>({poem: "", from: ""});
 
     return (
         <div>
@@ -48,6 +49,13 @@ export function CreateCard() {
                         <Preview
                             poem={viewData.poem}
                             from={viewData.from}
+                            setActiveStep={setActiveStep}
+                        />
+                    }
+                    {activeStep === "publish" &&
+                        <Publish
+                            //FIXME
+                            sharableUrl={"http://localhost:3000/card/123"}
                         />
                     }
                 </Box>

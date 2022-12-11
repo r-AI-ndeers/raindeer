@@ -3,12 +3,12 @@ import {CreationStage} from "../../components/Stepper";
 import {Controller, useForm} from "react-hook-form";
 import {Box, Button, TextField, ToggleButton, ToggleButtonGroup, Typography} from "@mui/material";
 import {GeneratedData} from "./CreateCard";
-import {ViewProps} from "./Preview";
+import {ViewData} from "./Preview";
 
 interface PoemEditFormProps {
     generatedData: GeneratedData,
     setActiveStep: React.Dispatch<React.SetStateAction<CreationStage>>;
-    setViewData: React.Dispatch<React.SetStateAction<ViewProps>>;
+    setViewData: React.Dispatch<React.SetStateAction<ViewData>>;
 }
 
 interface EditDataProps {

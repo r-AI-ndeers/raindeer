@@ -10,7 +10,7 @@ import {
 import React from "react";
 import {CreationStage} from "../../components/Stepper";
 import {GeneratedData} from "./CreateCard";
-import {ViewProps} from "./Preview";
+import {ViewData} from "./Preview";
 import {ImageUpload} from "./ImageUpload";
 import {BACKEND_URL} from "../../consts";
 
@@ -71,7 +71,7 @@ function InputTextField({
 interface PoemInputFormProps {
     setActiveStep: React.Dispatch<React.SetStateAction<CreationStage>>;
     setGeneratedData: React.Dispatch<React.SetStateAction<GeneratedData>>;
-    setViewData: React.Dispatch<React.SetStateAction<ViewProps>>;
+    setViewData: React.Dispatch<React.SetStateAction<ViewData>>;
 }
 
 interface GenerateEndpointResponse {
@@ -164,20 +164,21 @@ export function PoemInputForm({
                     control={control}
                     formFieldError={errors.interests}
                 />
-                <InputTextField
-                    title={"Who is this person to you?"}
-                    subtitle={"For example “an awesome friend”, “a great colleague”, “my grandma“, etc."}
-                    field={"person"}
-                    control={control}
-                    formFieldError={errors.person}
-                />
-                <InputTextField
-                    title={"Tell us a random fact about this person"}
-                    subtitle={"For example “recently moved, “loves and hates her PhD“, etc."}
-                    field={"fact"}
-                    control={control}
-                    formFieldError={errors.fact}
-                />
+                {/* commented out for now because it's just too many fields */}
+                {/*<InputTextField*/}
+                {/*    title={"Who is this person to you?"}*/}
+                {/*    subtitle={"For example “an awesome friend”, “a great colleague”, “my grandma“, etc."}*/}
+                {/*    field={"person"}*/}
+                {/*    control={control}*/}
+                {/*    formFieldError={errors.person}*/}
+                {/*/>*/}
+                {/*<InputTextField*/}
+                {/*    title={"Tell us a random fact about this person"}*/}
+                {/*    subtitle={"For example “recently moved“, “loves and hates her PhD“, etc."}*/}
+                {/*    field={"fact"}*/}
+                {/*    control={control}*/}
+                {/*    formFieldError={errors.fact}*/}
+                {/*/>*/}
                 <ImageUpload/>
                 <Button
                     disabled={isLoading}
