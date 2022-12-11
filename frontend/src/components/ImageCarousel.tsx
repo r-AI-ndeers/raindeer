@@ -52,10 +52,11 @@ export function ImageCarousel({images, setSelectedImage}: ImageCarouselProps) {
                             <Box
                                 component="img"
                                 sx={{
-                                    height: 512,
-                                    display: 'block',
-                                    width: 512,
-                                    overflow: 'hidden',
+                                    height: "auto",
+                                    aspectRatio: "1",
+                                    maxWidth: "100%",
+                                    display: "block",
+                                    margin: "auto",
                                 }}
                                 src={image}
                             />
