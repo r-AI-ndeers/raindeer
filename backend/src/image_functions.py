@@ -144,7 +144,7 @@ def image_pipeline(img_filename, multithreading_flag=True):
     if not multithreading_flag:
         for prompt in prompts:
             filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
-            all_img_filenames.append(filenames)
+            all_img_filenames.extend(filenames)
             
     else:
         
@@ -156,8 +156,8 @@ def image_pipeline(img_filename, multithreading_flag=True):
             try:
                 
                 for task in as_completed(threads, timeout=10):
-                    filename = task.result()
-                    all_img_filenames.append(filename)
+                    filenames = task.result()
+                    all_img_filenames.extend(filenames)
                     
             except Exception as e:
                 print(e)
