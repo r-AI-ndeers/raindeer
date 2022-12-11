@@ -26,10 +26,10 @@ def resize_imgs(img, mask, res=300):
     #mask = cv2.resize(mask, (int(mask.shape[1]/resize_factor), int(mask.shape[0]/resize_factor)))
     desired_face_px_count = 20000 #completely empirical value
     current_face_px_count = len(mask.nonzero()[1])
-    number_of_faces = count_faces(img)
+    #number_of_faces = count_faces(img)
     
     print(f'current face px count: {current_face_px_count}')
-    face_size_factor = np.sqrt(current_face_px_count/desired_face_px_count/number_of_faces)
+    face_size_factor = np.sqrt(current_face_px_count/desired_face_px_count)
     mask = cv2.resize(mask, (int(mask.shape[1]/face_size_factor), int(mask.shape[0]/face_size_factor)))
     img = cv2.resize(img, (int(img.shape[1]/face_size_factor), int(img.shape[0]/face_size_factor)))
     print(f'updated size, face px count now: {len(mask.nonzero()[1])}')
