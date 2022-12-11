@@ -27,6 +27,8 @@ __pycache__/
 .env
 .vscode
 frontend/node_modules/
+firebase_secret.json
+ 
 
 # Local Netlify folder
 .netlify
