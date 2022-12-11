@@ -69,6 +69,7 @@ export function PoemEditForm({
                             <ToggleButton value={result.style}>{result.style}</ToggleButton>
                     ))}
                 </ToggleButtonGroup>
+                <Typography variant={"body1"}>You can still edit the poem if you wish</Typography>
                 <Controller
                     name={"selectedPoem"}
                     control={control}

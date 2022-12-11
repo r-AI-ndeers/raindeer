@@ -1,15 +1,14 @@
 import React from 'react';
-import {Box, Button, CssBaseline, Typography} from "@mui/material";
+import {Box, Button, Typography} from "@mui/material";
 import {ImageBackgroundLayout} from "../components/Layout";
 import {MOCK_CARD_ID} from "../consts";
 
 
 export function Home() {
-  return (
-    <div>
-      <CssBaseline />
+    return (
         <ImageBackgroundLayout>
-            <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"} alignItems={"center"} gap={"64px"}>
+            <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"}
+                 alignItems={"center"} gap={"64px"}>
                 <Typography variant="h1">
                     rAIndeer
                 </Typography>
@@ -37,6 +36,5 @@ export function Home() {
                 </Box>
             </Box>
         </ImageBackgroundLayout>
-    </div>
-  );
+    );
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import {Box, Typography} from "@mui/material";
+import {Box, Button, Typography} from "@mui/material";
 import {useParams} from "react-router-dom";
 import {ImageBackgroundLayout} from "../components/Layout";
 import {BACKEND_URL} from "../consts";
@@ -18,7 +18,7 @@ async function fetchDataForId(id: string) {
 
 export function ViewCard() {
     // Expect the id to be passed down in the url
-    let { id } = useParams();
+    let {id} = useParams();
     const [viewData, setViewData] = React.useState<ViewData | undefined>(undefined);
 
     React.useEffect(() => {
@@ -43,12 +43,16 @@ export function ViewCard() {
 
     return (
         <ImageBackgroundLayout>
-            <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
+            <Box maxWidth={"600px"} display={"flex"} flexDirection={"column"}
+                 gap={"32px"}>
                 {viewData.image !== null && (
                     <img
                         style={{
-                            width: "512",
-                            height: "512",
+                            height: "auto",
+                            aspectRatio: "1",
+                            maxWidth: "100%",
+                            display: "block",
+                            margin: "auto",
                         }}
                         src={viewData.image}
                     />
@@ -74,6 +78,14 @@ export function ViewCard() {
                     Merry Christmas! <br/>
                     - From {viewData.sender}
                 </Typography>
+                <Button
+                    variant={"contained"}
+                    style={{marginTop: "64px"}}
+                    href={"/"}
+                    size={"large"}
+                >
+                    Create your own card with AI!
+                </Button>
             </Box>
         </ImageBackgroundLayout>
     )

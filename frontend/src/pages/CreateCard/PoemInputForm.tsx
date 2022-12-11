@@ -13,7 +13,7 @@ import {GeneratedData} from "./CreateCard";
 import {ViewData} from "./Preview";
 import {ImageUpload} from "./ImageUpload";
 import {BACKEND_URL} from "../../consts";
-import {green} from "@mui/material/colors";
+import {primaryColor} from "../../index";
 
 interface UserInput {
     recipientName: string;
@@ -45,7 +45,7 @@ function InputTextField({
 
     return (
         <Box display={"flex"}>
-            <Stack direction={"column"}>
+            <Stack direction={"column"} gap={"8px"}>
                 <Typography
                     variant={"h5"}>{title}{isRequired ? "*" : " (optional)"}</Typography>
                 <Typography variant={"body2"}>{subtitle}</Typography>
@@ -210,21 +210,24 @@ export function PoemInputForm({
                 {/*/>*/}
                 {/*<InputTextField*/}
                 {/*    title={"Tell us a random fact about this person"}*/}
+                {/*    isRequired*/}
                 {/*    subtitle={"For example “recently moved“, “loves and hates her PhD“, etc."}*/}
                 {/*    field={"fact"}*/}
                 {/*    control={control}*/}
                 {/*    formFieldError={errors.fact}*/}
                 {/*/>*/}
                 <ImageUpload setImage={setImage}  />
-                <Button
-                    disabled={isLoading}
-                    variant={"contained"}
-                    type={"submit"}
-                    size={"large"}
-                    style={{backgroundColor: isLoading ? "grey" : green[500]}}
-                >
-                    {!isLoading ? <Typography>Next</Typography> : <CircularProgress/>}
-                </Button>
+                <Box display={"flex"} justifyContent={"center"}>
+                    <Button
+                        disabled={isLoading}
+                        variant={"contained"}
+                        type={"submit"}
+                        size={"large"}
+                        style={{backgroundColor: isLoading ? "grey" : primaryColor}}
+                    >
+                        {!isLoading ? <Typography>Next</Typography> : <CircularProgress/>}
+                    </Button>
+                </Box>
                 <Typography variant={"body1"} color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
             </Stack>
         </form>

@@ -96,9 +96,11 @@ export function ImageUpload({ setImage }: ImageUploadProps) {
                         <img
                             src={filePreview}
                             style={{
-                                width: '400px',
-                                height: '400px',
-                                objectFit: "cover",
+                                height: "auto",
+                                aspectRatio: "1",
+                                maxWidth: "100%",
+                                display: "block",
+                                margin: "auto",
                             }}
                             alt={previewFile.name}
                             loading="lazy"

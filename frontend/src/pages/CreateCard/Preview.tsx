@@ -39,8 +39,11 @@ export function Preview({poem, from, image, setActiveStep, setCardId}: PreviewPr
             {image !== null && (
                 <img
                     style={{
-                        width: "512",
-                        height: "512",
+                        height: "auto",
+                        aspectRatio: "1",
+                        maxWidth: "100%",
+                        display: "block",
+                        margin: "auto",
                     }}
                     src={image}
                 />
