@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     AWS_KEY: str = 'AWS_KEY'
     AWS_SECRET_KEY: str = 'AWS_SECRET_KEY'
     DB_URL: str = 'DB_URL'
+    FIREBASE_PATH: str = 'FIREBASE_PATH'
 
     class Config:
         env_file = '.env'
@@ -30,7 +31,7 @@ class Settings(BaseSettings):
 settings = Settings()
 openai.api_key = settings.OPENAI_API_KEY
 
-cred_obj = firebase_admin.credentials.Certificate('/Users/rico.pircklen/personal_coding/hackathon/raindeer/raindeer-96102-firebase-adminsdk-2gsm6-de4bca66c2.json')
+cred_obj = firebase_admin.credentials.Certificate(settings.FIREBASE_PATH)
 databaseURL = settings.DB_URL
 default_app = firebase_admin.initialize_app(cred_obj, {
     'databaseURL': databaseURL
@@ -152,11 +153,8 @@ def upload_img(img):
 @app.get("/cards/{id}")
 async def card(id):
     ref = db.reference('cards')
-    cards = ref.order_by_key().get()
-    for c in cards.items():
-        print(c)
-
-    return {}
+    card = ref.order_by_child('id').equal_to(id).get()
+    return card
 
 
 class PublishInput(BaseModel):
