@@ -223,7 +223,7 @@ export function PoemInputForm({
                         variant={"contained"}
                         type={"submit"}
                         size={"large"}
-                        style={{backgroundColor: isLoading ? "grey" : primaryColor}}
+                        style={{backgroundColor: isLoading ? "grey" : primaryColor, marginTop: "32px"}}
                     >
                         {!isLoading ?
                             <Typography>Generate</Typography> :
