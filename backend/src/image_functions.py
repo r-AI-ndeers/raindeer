@@ -6,11 +6,11 @@ import base64
 import io
 import os
 from dotenv import load_dotenv
-from image_preprocessing import preprocess_imgs
+from .image_preprocessing import preprocess_imgs
 import time
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-from s3_functions import S3Uploader
+from .s3_functions import S3Uploader
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
