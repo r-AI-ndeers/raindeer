@@ -6,3 +6,9 @@ uvicorn
 python-dotenv
 supabase
 python-multipart
+matplotlib
+opencv-python
+Pillow
+stability-sdk
+torchvision
+boto3

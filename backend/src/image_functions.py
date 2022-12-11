@@ -1,13 +1,10 @@
 import requests
-import cv2
 import numpy as np
 import json
 from PIL import Image
 import base64
 import io
-import matplotlib.pyplot as plt
 import os
-from torchvision.transforms import GaussianBlur
 from dotenv import load_dotenv
 from image_preprocessing import preprocess_imgs
 import time
@@ -127,11 +124,10 @@ def image_pipeline(img_filename):
     img = np.array(Image.open(img_filename))
     mask = mask_img(img_filename, API_URL=masking_api_url,
                     headers=masking_api_headers)
-    mask.save("imgs/mask.jpg")  # just some local backup for debugging
+    # mask.save("imgs/mask.jpg")  # just some local backup for debugging
     img, mask = preprocess_imgs(img, mask)
     print("made the masking")
     prompts = [
-
         "cyberpunk christmas image. a person with santa hat, christmas tree, this pastel painting by the award - winning children's book author has interesting color contrasts, plenty of details and impeccable lighting. | hands:-1.0",
         "Pencil drawing, portrait and gifts, christmassy setting, beach boy | hands:-1.0"
          "Christmassy image, santa hat, oil painting style, beautiful| hands:-1.0",
@@ -143,11 +139,9 @@ def image_pipeline(img_filename):
     for prompt in prompts:
         filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
         all_img_filenames.append(filenames)
-        
-    return all_img_filenames
-        
 
-        
+    # flatten array since there are multiple images per prompt
+    return [img for prompt_images in all_img_filenames for img in prompt_images]
 
 if __name__ == '__main__':
     start_time = time.time()

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, BaseSettings
 import openai
@@ -8,6 +8,8 @@ import re
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
+
+from image_functions import image_pipeline
 
 load_dotenv()
 
@@ -101,13 +103,15 @@ async def generate_poem(
 
 @app.post("/generate/image")
 async def generate_image(
-    file: UploadFile,
+    file: UploadFile = File(...),
 ):
-    with open(file.filename, "wb") as buffer:
-        print("Got the file bitch")
-        print(file.filename)
+    file_location = f"{file.filename}"
+    with open(file_location, "wb+") as file_object:
+        file_object.write(file.file.read())
 
-    return {"results": []}
+    urls = image_pipeline(file_location)
+
+    return {"results": urls}
 
 def normalise_poem(poem: str) -> str:
     # Find and remove all occurences of "Verse 1", "Verse 2", "Paragraph 1: etc

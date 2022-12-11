@@ -42,10 +42,6 @@ export function PoemEditForm({
         }
     };
 
-    const image = watch("selectedImage");
-    console.log(image)
-
-
     const onSubmit = handleSubmit(async (data) => {
         setViewData(prevState => ({
             ...prevState,
@@ -84,7 +80,7 @@ export function PoemEditForm({
                         />
                     }
                 />
-                {generatedData.generatedImages.length > 0 || true && (
+                {generatedData.generatedImages.length > 0 && (
                     <Box display={"flex"} flexDirection={"column"}>
                         <Typography variant={"h4"}>Select image</Typography>
                         <ImageCarousel
