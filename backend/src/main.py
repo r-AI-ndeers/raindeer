@@ -90,6 +90,21 @@ def get_poem(style, data):
     result = normalise_poem(response.choices[0].text)
     return {"style": style, "poem": result}
 
+def get_chatgpt_poem(style, data):
+    email = settings.CHATGPT_EMAIL
+    password = settings.CHATGPT_PASSWORD
+    config = {
+    "email": email,
+    "password": password,
+    }
+    chatbot = Chatbot(config, conversation_id=None)
+    response = chatbot.get_chat_response(prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
+                            data.verseCount, data.person, data.fact), output="text")
+    text = response.get("message")
+
+    result = normalise_poem(text)
+    return {"style": style, "poem": result}
+
 @app.post("/generate/poem")
 def generate_poem(
         data: GeneratePoemInput,
@@ -99,38 +114,36 @@ def generate_poem(
     results = []
     threads = []
 
-    """if settings.MODEL == "CHATGPT":
-        for style in promptStyles:
-            email = settings.CHATGPT_EMAIL
-            password = settings.CHATGPT_PASSWORD
-            config = {
-            "email": email,
-            "password": password,
-            }
-            chatbot = Chatbot(config, conversation_id=None)
-            response = chatbot.get_chat_response(prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
-                                    data.verseCount, data.person, data.fact), output="text")
-            text = response.get("message")
-
-            result = normalise_poem(text)
-            results.append({"style": style, "poem": result})
+    if settings.MODEL == "CHATGPT":
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            for style in promptStyles:
+                threads.append(executor.submit(get_chatgpt_poem, style, data))
+            try:
+                for task in as_completed(threads, timeout=15):
+                    results.append(task.result())
+            
+            except Exception as e:
+                print(e)
+                for task in threads:
+                    task.cancel()     
+        t2 = time.time()
+        print(f"Time taken for poem generation: {np.round(t2-t1,2)}") 
         return {"results": results}
-
-    else:"""
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        for style in promptStyles:
-            threads.append(executor.submit(get_poem, style, data))
-        try:
-            for task in as_completed(threads, timeout=15):
-                results.append(task.result())
-        
-        except Exception as e:
-            print(e)
-            for task in threads:
-                task.cancel()      
-    t2 = time.time()
-    print(f"Time taken for poem generation: {np.round(t2-t1,2)}")
-    return {"results": results}
+    else:
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            for style in promptStyles:
+                threads.append(executor.submit(get_poem, style, data))
+            try:
+                for task in as_completed(threads, timeout=15):
+                    results.append(task.result())
+            
+            except Exception as e:
+                print(e)
+                for task in threads:
+                    task.cancel()      
+        t2 = time.time()
+        print(f"Time taken for poem generation: {np.round(t2-t1,2)}")
+        return {"results": results}
 
 
 @app.post("/generate/image")
