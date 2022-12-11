@@ -144,11 +144,14 @@ def image_pipeline(img_filename):
         filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
         all_img_filenames.append(filenames)
         
+    return all_img_filenames
+        
 
         
 
 if __name__ == '__main__':
     start_time = time.time()
-    image_pipeline("imgs/Screenshot 2022-11-30 at 17.45.48.png")
+    filenames = image_pipeline("imgs/Screenshot 2022-11-30 at 17.45.48.png")
     end_time = time.time()
     print(f"image pipeline took: {np.round(end_time - start_time, 2)} seconds")
+    print(filenames)
