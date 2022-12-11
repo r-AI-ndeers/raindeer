@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
 
-from image_functions import image_pipeline
+from .image_functions import image_pipeline
 
 load_dotenv()
 
@@ -123,7 +123,6 @@ def normalise_poem(poem: str) -> str:
 
 @app.get("/image")
 def image():
-    # theme['monsterThemeBg'] = supabase.storage().StorageFileAPI(BUCKET_NAME).get_public_url(FILE_LOCATION)
     image = supabase.storage().StorageFileAPI('images').get_public_url(
         'uploaded/test.png')
     return image
