@@ -11,3 +11,4 @@ opencv-python
 Pillow
 stability-sdk
 boto3
+firebase-admin

@@ -5,18 +5,18 @@ import {ImageBackgroundLayout} from "../components/Layout";
 
 interface ViewData {
     poem: string;
-    from: string;
+    sender: string;
     image: string | null;
 }
 
 async function fetchDataForId(id: string) {
     return {
         poem: "This is a poem",
-        from: "Maksym",
+        sender: "Maksym",
         image: null,
     }
 
-    // return fetch(`${BACKEND_URL}/card/${id}`).then(res => res.json());
+    // return fetch(`${BACKEND_URL}/cards/${id}`).then(res => res.json());
 }
 
 export function ViewCard() {
@@ -71,7 +71,7 @@ export function ViewCard() {
                     }}
                 >
                     Merry Christmas! <br/>
-                    - From {viewData.from}
+                    - From {viewData.sender}
                 </Typography>
             </Box>
         </ImageBackgroundLayout>

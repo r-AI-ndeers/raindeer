@@ -25,7 +25,7 @@ export function Preview({poem, from, image, setActiveStep, setCardId}: PreviewPr
             },
             body: JSON.stringify({
                 poem: poem,
-                from: from,
+                sender: from,
                 image: image,
             }),
         }).then(response => response.json()).then((data) => {

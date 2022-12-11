@@ -30,3 +30,5 @@ frontend/node_modules/
 
 # Local Netlify folder
 .netlify
+
+firebase_secret.json
