@@ -36,7 +36,7 @@ interface ImageUploadProps {
     setImage: (image: File) => void;
 }
 
-export function ImageUpload({ setImage }: ImageUploadProps) {
+export function ImageUpload({setImage}: ImageUploadProps) {
     const [previewFile, setPreviewFile] = React.useState<File | null>(null);
     const [filePreview, setFilePreview] = React.useState<string | null>(null);
 
@@ -50,7 +50,7 @@ export function ImageUpload({ setImage }: ImageUploadProps) {
         accept: {
             'image/*': []
         },
-        onDrop: acceptedFiles => {
+        onDrop: async (acceptedFiles) => {
             let file = acceptedFiles[0]
             setFilePreview(URL.createObjectURL(file))
             // This file is just for the preview and the other image is for the actual upload
@@ -86,18 +86,18 @@ export function ImageUpload({ setImage }: ImageUploadProps) {
                     </div>
                 )}
                 {previewFile !== null && filePreview !== null && (
-                    <Box display={"flex"} flexDirection={"column"} alignItems={"center"} gap={"8px"}>
-                        <IconButton  onClick={() => {
+                    <Box display={"flex"} flexDirection={"column"} alignItems={"center"}
+                         gap={"8px"}>
+                        <IconButton onClick={() => {
                             setPreviewFile(null)
                             setFilePreview(null)
                         }}>
-                            <Replay />
+                            <Replay/>
                         </IconButton>
                         <img
                             src={filePreview}
                             style={{
                                 height: "auto",
-                                aspectRatio: "1",
                                 maxWidth: "100%",
                                 display: "block",
                                 margin: "auto",

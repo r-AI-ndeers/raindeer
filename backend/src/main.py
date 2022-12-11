@@ -52,10 +52,10 @@ default_app = firebase_admin.initialize_app(cred_obj, {
 class GeneratePoemInput(BaseModel):
     receiver: str
     likes: str
-    interests: str
+    fact: str
     verseCount: int
+    interests: Optional[str]
     person: Optional[str]
-    fact: Optional[str]
 
 
 app = FastAPI(debug=True)

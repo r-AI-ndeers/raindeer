@@ -92,11 +92,11 @@ function userInputToGenerateRequest(userInput: UserInput): GenerateEndpointReque
     return {
         receiver: userInput.recipientName,
         likes: userInput.likes,
-        interests: userInput.interests,
+        fact: userInput.fact || "",
+        interests: userInput.interests || "",
         // Verse count is just hardcoded to 3 for now
         verseCount: 3,
-        person: userInput.person,
-        fact: userInput.fact,
+        person: userInput.person || "",
     }
 }
 
@@ -192,14 +192,14 @@ export function PoemInputForm({
                     control={control}
                     formFieldError={errors.likes}
                 />
-                <InputTextField
-                    title={"What interests this person?"}
-                    subtitle={"For example “games“ or “coding“."}
-                    field={"interests"}
-                    isRequired
-                    control={control}
-                    formFieldError={errors.interests}
-                />
+                {/*<InputTextField*/}
+                {/*    title={"What interests this person?"}*/}
+                {/*    subtitle={"For example “games“ or “coding“."}*/}
+                {/*    field={"interests"}*/}
+                {/*    isRequired*/}
+                {/*    control={control}*/}
+                {/*    formFieldError={errors.interests}*/}
+                {/*/>*/}
                 {/* commented out for now because it's just too many fields */}
                 {/*<InputTextField*/}
                 {/*    title={"Who is this person to you?"}*/}
@@ -208,14 +208,14 @@ export function PoemInputForm({
                 {/*    control={control}*/}
                 {/*    formFieldError={errors.person}*/}
                 {/*/>*/}
-                {/*<InputTextField*/}
-                {/*    title={"Tell us a random fact about this person"}*/}
-                {/*    isRequired*/}
-                {/*    subtitle={"For example “recently moved“, “loves and hates her PhD“, etc."}*/}
-                {/*    field={"fact"}*/}
-                {/*    control={control}*/}
-                {/*    formFieldError={errors.fact}*/}
-                {/*/>*/}
+                <InputTextField
+                    title={"Give us a (funny) fact about this person"}
+                    isRequired
+                    subtitle={"For example “sings in the shower“, “has travelled 5 countries“, etc."}
+                    field={"fact"}
+                    control={control}
+                    formFieldError={errors.fact}
+                />
                 <ImageUpload setImage={setImage}  />
                 <Box display={"flex"} flexDirection={"column"} alignItems={"center"} justifyContent={"center"}>
                     <Button
@@ -228,7 +228,7 @@ export function PoemInputForm({
                         {!isLoading ?
                             <Typography>Generate</Typography> :
                             <Box display={"flex"} gap={"4px"} alignItems={"center"}>
-                                <CircularProgress/>
+                                <CircularProgress size={"small"}/>
                                 <Typography>Generating...</Typography>
                             </Box>
                         }

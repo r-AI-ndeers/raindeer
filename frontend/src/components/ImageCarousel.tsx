@@ -36,7 +36,7 @@ export function ImageCarousel({images, setSelectedImage}: ImageCarouselProps) {
     }, [currentImageNumber])
 
     return (
-        <Box sx={{maxWidth: 512, flexGrow: 1}}>
+        <Box sx={{maxWidth: 400, flexGrow: 1}}>
             <SwipeableViews
                 containerStyle={{
                     transition: 'transform 0.35s cubic-bezier(0.15, 0.3, 0.25, 1) 0s'
