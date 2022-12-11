@@ -6,11 +6,14 @@ import base64
 import io
 import os
 from dotenv import load_dotenv
-from .image_preprocessing import preprocess_imgs
+from image_preprocessing import preprocess_imgs
 import time
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-from .s3_functions import S3Uploader
+from s3_functions import S3Uploader
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 
 load_dotenv()
 huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
@@ -90,10 +93,10 @@ def stable_diffusionize(img, mask, prompt, stability_token, s3_uploader):
         init_image=Image.fromarray(img),
         mask_image=Image.fromarray(mask),
         start_schedule=1,
-        guidance_strength=0.25,
+        #guidance_strength=0.25,
         samples=3,
         steps=30,
-        cfg_scale=6.5,
+        cfg_scale=7,
         width=512,
         height=512,
         sampler=generation.SAMPLER_K_DPMPP_2M
@@ -128,24 +131,33 @@ def image_pipeline(img_filename):
     img, mask = preprocess_imgs(img, mask)
     print("made the masking")
     prompts = [
-        "cyberpunk christmas image. a person with santa hat, christmas tree, this pastel painting by the award - winning children's book author has interesting color contrasts, plenty of details and impeccable lighting. | hands:-1.0",
-        "Pencil drawing, portrait and gifts, christmassy setting, beach boy | hands:-1.0"
-         "Christmassy image, santa hat, oil painting style, beautiful| hands:-1.0",
-         f"A person wearing a santa hat, by the beach, great figure, (((dolphins dancing on the beach)))",
-         f"A handsome person ((wearing a santa hat)), pixel art, surrounded by presents, space ship in the background",
-         f"a beautiful person, oil painting, ((wearing a christmas hat)), flexing his muscles,  handsome, model, fit, under the stars, moon",
+        "cyberpunk christmas image. a person with santa hat, christmas tree, this pastel painting by the award - winning children's book author has interesting color contrasts, plenty of details and impeccable lighting. great resolution | hands:-1.0",
+        "Pencil drawing, portrait and gifts, christmassy setting, beach boy, great resolution | hands:-1.0"
+         "Christmassy image, santa hat, oil painting style, beautiful, great resolution | hands:-1.0",
+         f"A person wearing a santa hat, by the beach, great figure, (((dolphins dancing on the beach))), great resolution",
+         f"A handsome person ((wearing a santa hat)), pixel art, surrounded by presents, space ship in the background, great resolution",
+         f"a beautiful person, oil painting, ((wearing a christmas hat)), flexing his muscles,  handsome, model, fit, under the stars, moon, grear resolution",
     ]
     all_img_filenames = []
-    for prompt in prompts:
-        filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
-        all_img_filenames.append(filenames)
+    threads = []
+    counter = 0
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        for prompt in prompts:
+            threads.append(executor.submit(stable_diffusionize, img, mask, prompt, stability_token, s3_uploader))
+            #filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
+            #all_img_filenames.append(filenames)
+            
+        for task in as_completed(threads):
+            filename = task.result()
+            all_img_filenames.append(filename)
+            counter += 1
+            print(counter)
 
-    # flatten array since there are multiple images per prompt
-    return [img for prompt_images in all_img_filenames for img in prompt_images]
+    return all_img_filenames
 
 if __name__ == '__main__':
     start_time = time.time()
-    filenames = image_pipeline("imgs/Screenshot 2022-11-30 at 17.45.48.png")
+    filenames = image_pipeline("imgs/Photo on 10.12.22 at 21.34.jpg")
     end_time = time.time()
     print(f"image pipeline took: {np.round(end_time - start_time, 2)} seconds")
     print(filenames)
