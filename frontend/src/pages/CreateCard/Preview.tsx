@@ -74,7 +74,6 @@ export function Preview({poem, from, image, setActiveStep}: PreviewProps) {
                     variant={"contained"}
                     onClick={async () => await publish()}
                     size={"large"}
-                    style={{backgroundColor: "#2E7D32"}}
                 >
                     Publish
                 </Button>

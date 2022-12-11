@@ -1,6 +1,6 @@
 import {Step, StepLabel, Stepper} from "@mui/material";
 
-const steps = ["Personalise card", "Edit", "Review", "Publish"];
+const steps = ["Personalise card", "Edit", "Review"];
 
 export type CreationStage = "input" | "edit"  | "preview" | "publish"
 
@@ -25,9 +25,9 @@ interface StepperProps {
 
 export const CardStepper = ({activeStep}: StepperProps) => {
     return (
-        <Stepper nonLinear alternativeLabel activeStep={stepToNumber(activeStep)}>
+        <Stepper alternativeLabel activeStep={stepToNumber(activeStep)}>
             {steps.map((label, index) => (
-              <Step key={label} completed={false}>
+              <Step key={label}>
                   <StepLabel>
                       {label}
                   </StepLabel>

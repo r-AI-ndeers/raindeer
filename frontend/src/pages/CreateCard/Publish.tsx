@@ -15,7 +15,7 @@ export function Publish({sharableUrl}: PublishProps) {
                 <CheckCircleOutlineIcon style={{fontSize: "100px", color: "#00ab41"}}/>
                 <Typography variant={"h4"} style={{color: "#00ab41"}}>Congratulations, your card is ready!</Typography>
             </Box>
-            <Typography variant={"h5"}>Share your card with the people close to you!</Typography>
+            <Typography variant={"h5"}>Share your card with the person close to you!</Typography>
             <TextField
                 id="outlined-read-only-input"
                 style={{backgroundColor: "white"}}
@@ -37,7 +37,6 @@ export function Publish({sharableUrl}: PublishProps) {
                 variant={"contained"}
                 href={"/"}
                 size={"large"}
-                style={{backgroundColor: "#2E7D32"}}
             >
                 Home
             </Button>

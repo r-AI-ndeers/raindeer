@@ -33,12 +33,14 @@ export function PoemEditForm({
 
     const handleChange = (
         event: React.MouseEvent<HTMLElement>,
-        newStyle: string,
+        newStyle: string | null,
     ) => {
-        setSelectedStyle(newStyle);
-        const newPoem = generatedData.generatedPoems.find((result) => result.style === newStyle)?.poem
-        if (newPoem) {
-            setValue("selectedPoem", newPoem);
+        if (newStyle !== null) {
+            setSelectedStyle(newStyle);
+            const newPoem = generatedData.generatedPoems.find((result) => result.style === newStyle)?.poem
+            if (newPoem) {
+                setValue("selectedPoem", newPoem);
+            }
         }
     };
 
@@ -59,9 +61,9 @@ export function PoemEditForm({
                 <ToggleButtonGroup
                     color="primary"
                     value={selectedStyle}
+                    style={{backgroundColor: "white", width: "fit-content"}}
                     exclusive
                     onChange={handleChange}
-                    aria-label="Platform"
                 >
                     {generatedData.generatedPoems.map((result, index) => (
                             <ToggleButton value={result.style}>{result.style}</ToggleButton>
@@ -102,7 +104,6 @@ export function PoemEditForm({
                         variant={"contained"}
                         type={"submit"}
                         size={"large"}
-                        style={{backgroundColor: "#2E7D32"}}
                     >
                         Preview
                     </Button>

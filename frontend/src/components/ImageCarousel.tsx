@@ -17,7 +17,6 @@ export function ImageCarousel({images, setSelectedImage}: ImageCarouselProps) {
     const theme = useTheme();
     const [currentImageNumber, setCurrentImageNumber] = React.useState(0);
     const maxSteps = images.length;
-    console.log(images)
 
     const handleNext = () => {
         setCurrentImageNumber((prevActiveStep) => prevActiveStep + 1);
