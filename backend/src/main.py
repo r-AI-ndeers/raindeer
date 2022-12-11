@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     AWS_SECRET_KEY: str = 'AWS_SECRET_KEY'
     DB_URL: str = 'DB_URL'
     FIREBASE_PATH: str = 'FIREBASE_PATH'
-    
+
     class Config:
         env_file = '.env'
 
@@ -148,10 +148,11 @@ def upload_img(img):
 @app.get("/card")  
 async def card(id):
     ref = db.reference('cards')
-    cards = ref.order_by_key().get()
-    for c in cards.items():
-        print(c)
-    return {}
+    cards = ref.order_by_child('id').equal_to(id).get()
+    return cards
+    #for c in cards.items():
+    #    print(c)
+    #return {}
 
 @app.post("/publish")
 async def publish(poem, sender, image): # from not ideal term for python variable....
