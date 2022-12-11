@@ -143,6 +143,8 @@ def generate_poem(
                     task.cancel()      
         t2 = time.time()
         print(f"Time taken for poem generation: {np.round(t2-t1,2)}")
+        # Sort in the same order as promptStyles are defined
+        results.sort(key=lambda x: promptStyles.index(x["style"]))
         return {"results": results}
 
 
