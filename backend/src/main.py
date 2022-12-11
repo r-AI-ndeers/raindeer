@@ -8,9 +8,12 @@ from starlette.middleware.cors import CORSMiddleware
 import uuid
 import firebase_admin
 from firebase_admin import db
+from revChatGPT.revChatGPT import Chatbot
 
 from .image_functions import image_pipeline
 from .poem_functions import generate_prompt, normalise_poem
+
+import json
 
 load_dotenv()
 
@@ -21,6 +24,9 @@ class Settings(BaseSettings):
     DB_URL: str = 'DB_URL'
     FIREBASE_PATH: str = 'FIREBASE_PATH'
     FIREBASE_JSON: str = 'FIREBASE_JSON'
+    CHATGPT_EMAIL: str = 'CHATGPT_EMAIL'
+    CHATGPT_PASSWORD: str = 'CHATGPT_PASSWORD'
+    MODEL: str = 'MODEL'
 
     #class Config:
     #    env_file = '.env'
@@ -32,6 +38,7 @@ openai.api_key = settings.OPENAI_API_KEY
 firebase_config = settings.FIREBASE_PATH
 if settings.FIREBASE_JSON:
     firebase_config = json.loads(settings.FIREBASE_JSON)
+    
 cred_obj = firebase_admin.credentials.Certificate(firebase_config)
 databaseURL = settings.DB_URL
 default_app = firebase_admin.initialize_app(cred_obj, {
@@ -69,21 +76,38 @@ def read_root():
 def generate_poem(
         data: GeneratePoemInput,
 ):
-    promptStyles = ["personal", "ghetto", "shakespeare"]
+    promptStyles = ["personal"]#, "ghetto", "shakespeare"]
     results = []
     for style in promptStyles:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
-                                   data.verseCount, data.person, data.fact),
-            temperature=0.7,
-            max_tokens=1000,
-            timeout=1000,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0
-        )
-        result = normalise_poem(response.choices[0].text)
+        if settings.MODEL == "CHATGPT":
+            email = settings.CHATGPT_EMAIL
+            password = settings.CHATGPT_PASSWORD
+            config = {
+            "email": email,
+            "password": password,
+            #"session_token": "<SESSION_TOKEN>", # Deprecated. Use only if you encounter captcha with email/password
+            #"proxy": "<HTTP/HTTPS_PROXY>"
+            }
+            chatbot = Chatbot(config, conversation_id=None)
+            response = chatbot.get_chat_response(prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
+                                    data.verseCount, data.person, data.fact), output="text")
+            text = response.get("message")
+
+        else:
+            response = openai.Completion.create(
+                model="text-davinci-003",
+                prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
+                                    data.verseCount, data.person, data.fact),
+                temperature=0.7,
+                max_tokens=1000,
+                timeout=1000,
+                top_p=1,
+                frequency_penalty=0,
+                presence_penalty=0
+            )
+            text = response.choices[0].text
+        
+        result = normalise_poem(text)
         results.append({"style": style, "poem": result})
     return {"results": results}
 
@@ -129,3 +153,4 @@ async def publish(publish_input: PublishInput):
         return {"id": id}
     except Exception as e:
         return {"id": ""}
+
