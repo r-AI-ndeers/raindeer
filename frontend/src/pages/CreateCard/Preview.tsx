@@ -35,12 +35,15 @@ export function Preview({poem, from, image, setActiveStep, setCardId}: PreviewPr
     }
 
     return (
-        <Box width={"600px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
+        <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"} gap={"32px"}>
             {image !== null && (
                 <img
                     style={{
-                        width: "512",
-                        height: "512",
+                        height: "auto",
+                        aspectRatio: "1",
+                        maxWidth: "100%",
+                        display: "block",
+                        margin: "auto",
                     }}
                     src={image}
                 />

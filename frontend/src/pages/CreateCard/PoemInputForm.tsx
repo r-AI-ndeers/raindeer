@@ -13,7 +13,7 @@ import {GeneratedData} from "./CreateCard";
 import {ViewData} from "./Preview";
 import {ImageUpload} from "./ImageUpload";
 import {BACKEND_URL} from "../../consts";
-import {green} from "@mui/material/colors";
+import {primaryColor} from "../../index";
 
 interface UserInput {
     recipientName: string;
@@ -45,7 +45,7 @@ function InputTextField({
 
     return (
         <Box display={"flex"}>
-            <Stack direction={"column"}>
+            <Stack direction={"column"} gap={"8px"}>
                 <Typography
                     variant={"h5"}>{title}{isRequired ? "*" : " (optional)"}</Typography>
                 <Typography variant={"body2"}>{subtitle}</Typography>
@@ -109,7 +109,9 @@ const generatePoem = async (userInput: UserInput) => {
         body: JSON.stringify(userInputToGenerateRequest(userInput)),
     }).then(response => response.json()).then((data: GeneratePoemResponse) => {
         return data
-    });
+    }).catch((error) => {
+        console.log(error)
+    })
 }
 
 interface GenerateImageResponse {
@@ -129,7 +131,9 @@ const generateImages = async (image: File | null) => {
       body: data
     }).then(response => response.json()).then((data: GenerateImageResponse) => {
         return data
-    });
+    }).catch((error) => {
+        console.log(error)
+    })
 }
 
 export function PoemInputForm({
@@ -140,6 +144,7 @@ export function PoemInputForm({
     const {control, handleSubmit, formState: {errors}} = useForm<UserInput>();
     const [image, setImage] = React.useState<File | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isError, setIsError] = React.useState(false);
 
     const onSubmit = handleSubmit(async (data) => {
         setIsLoading(true);
@@ -147,15 +152,18 @@ export function PoemInputForm({
             generatePoem(data),
             generateImages(image)
         ])
-        if (generatedPoem) {
+        if (generatedPoem && generatedImages) {
             setGeneratedData({
                 generatedPoems: generatedPoem.results,
                 generatedImages: generatedImages.results,
             });
+            setViewData((prevState) => ({...prevState, from: data.senderName}))
+            setIsLoading(false);
+            setActiveStep("edit")
+        } else {
+            setIsError(true);
+            setIsLoading(false)
         }
-        setViewData((prevState) => ({...prevState, from: data.senderName}))
-        setIsLoading(false);
-        setActiveStep("edit")
     });
 
     return (
@@ -202,21 +210,32 @@ export function PoemInputForm({
                 {/*/>*/}
                 {/*<InputTextField*/}
                 {/*    title={"Tell us a random fact about this person"}*/}
+                {/*    isRequired*/}
                 {/*    subtitle={"For example “recently moved“, “loves and hates her PhD“, etc."}*/}
                 {/*    field={"fact"}*/}
                 {/*    control={control}*/}
                 {/*    formFieldError={errors.fact}*/}
                 {/*/>*/}
                 <ImageUpload setImage={setImage}  />
-                <Button
-                    disabled={isLoading}
-                    variant={"contained"}
-                    type={"submit"}
-                    size={"large"}
-                    style={{backgroundColor: isLoading ? "grey" : green[500]}}
-                >
-                    {!isLoading ? <Typography>Next</Typography> : <CircularProgress/>}
-                </Button>
+                <Box display={"flex"} flexDirection={"column"} alignItems={"center"} justifyContent={"center"}>
+                    <Button
+                        disabled={isLoading}
+                        variant={"contained"}
+                        type={"submit"}
+                        size={"large"}
+                        style={{backgroundColor: isLoading ? "grey" : primaryColor, marginTop: "32px"}}
+                    >
+                        {!isLoading ?
+                            <Typography>Generate</Typography> :
+                            <Box display={"flex"} gap={"4px"} alignItems={"center"}>
+                                <CircularProgress/>
+                                <Typography>Generating...</Typography>
+                            </Box>
+                        }
+                    </Button>
+                    <Typography>(Generation can take up to a minute)</Typography>
+                </Box>
+                <Typography variant={"body1"} color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
             </Stack>
         </form>
     )

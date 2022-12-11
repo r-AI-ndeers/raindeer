@@ -15,24 +15,24 @@ def count_faces(img):
             gray,
             scaleFactor=1.3,
             minNeighbors=3,
-            minSize=(30, 30))
-    return (len(faces))
+            minSize=(50, 50))
+    output = len(faces) if not len(faces)==0 else 1
+    return output
 
 def resize_imgs(img, mask, res=300):
     mask = np.array(mask)
-    resize_factor = img.shape[select_smallest_axis(img)]/res 
-    img = cv2.resize(img, (int(img.shape[1]/resize_factor), int(img.shape[0]/resize_factor)))
-    mask = cv2.resize(mask, (int(mask.shape[1]/resize_factor), int(mask.shape[0]/resize_factor)))
-    #desired_face_px_count = 20000 #completely empirical value
-    #current_face_px_count = len(mask.nonzero()[1])
+    #resize_factor = img.shape[select_smallest_axis(img)]/res 
+    #img = cv2.resize(img, (int(img.shape[1]/resize_factor), int(img.shape[0]/resize_factor)))
+    #mask = cv2.resize(mask, (int(mask.shape[1]/resize_factor), int(mask.shape[0]/resize_factor)))
+    desired_face_px_count = 20000 #completely empirical value
+    current_face_px_count = len(mask.nonzero()[1])
     #number_of_faces = count_faces(img)
     
-    
-    #print(f'current face px count: {current_face_px_count}')
-    #face_size_factor = current_face_px_count/(desired_face_px_count*2)
-    #mask = cv2.resize(mask, (int(mask.shape[1]/face_size_factor), int(mask.shape[0]/face_size_factor)))
-    #img = cv2.resize(img, (int(img.shape[1]/face_size_factor), int(img.shape[0]/face_size_factor)))
-    #print(f'updated size, face px count now: {len(mask.nonzero()[1])}')
+    print(f'current face px count: {current_face_px_count}')
+    face_size_factor = np.sqrt(current_face_px_count/desired_face_px_count)
+    mask = cv2.resize(mask, (int(mask.shape[1]/face_size_factor), int(mask.shape[0]/face_size_factor)))
+    img = cv2.resize(img, (int(img.shape[1]/face_size_factor), int(img.shape[0]/face_size_factor)))
+    print(f'updated size, face px count now: {len(mask.nonzero()[1])}')
 
     return img, mask
 

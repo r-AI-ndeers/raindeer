@@ -1,14 +1,17 @@
 from typing import Optional
-
+import json
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel, BaseSettings
 import openai
+import numpy as np
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import uuid
+import time
 import firebase_admin
 from firebase_admin import db
 from revChatGPT.revChatGPT import Chatbot
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .image_functions import image_pipeline
 from .poem_functions import generate_prompt, normalise_poem
@@ -72,43 +75,61 @@ def read_root():
     return {"test": "success"}
 
 
+def get_poem(style, data):
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
+                            data.verseCount, data.person, data.fact),
+        temperature=0.7,
+        max_tokens=1000,
+        timeout=1000,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    result = normalise_poem(response.choices[0].text)
+    return {"style": style, "poem": result}
+
 @app.post("/generate/poem")
 def generate_poem(
         data: GeneratePoemInput,
 ):
-    promptStyles = ["personal"]#, "ghetto", "shakespeare"]
+    promptStyles = ["personal", "street", "shakespeare"]
+    t1 = time.time()
     results = []
-    for style in promptStyles:
-        if settings.MODEL == "CHATGPT":
+    threads = []
+
+    """if settings.MODEL == "CHATGPT":
+        for style in promptStyles:
             email = settings.CHATGPT_EMAIL
             password = settings.CHATGPT_PASSWORD
             config = {
             "email": email,
             "password": password,
-            #"session_token": "<SESSION_TOKEN>", # Deprecated. Use only if you encounter captcha with email/password
-            #"proxy": "<HTTP/HTTPS_PROXY>"
             }
             chatbot = Chatbot(config, conversation_id=None)
             response = chatbot.get_chat_response(prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
                                     data.verseCount, data.person, data.fact), output="text")
             text = response.get("message")
 
-        else:
-            response = openai.Completion.create(
-                model="text-davinci-003",
-                prompt=generate_prompt(style, data.receiver, data.likes, data.interests,
-                                    data.verseCount, data.person, data.fact),
-                temperature=0.7,
-                max_tokens=1000,
-                timeout=1000,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0
-            )
-            text = response.choices[0].text
+            result = normalise_poem(text)
+            results.append({"style": style, "poem": result})
+        return {"results": results}
+
+    else:"""
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        for style in promptStyles:
+            threads.append(executor.submit(get_poem, style, data))
+        try:
+            for task in as_completed(threads, timeout=15):
+                results.append(task.result())
         
-        result = normalise_poem(text)
-        results.append({"style": style, "poem": result})
+        except Exception as e:
+            print(e)
+            for task in threads:
+                task.cancel()      
+    t2 = time.time()
+    print(f"Time taken for poem generation: {np.round(t2-t1,2)}")
     return {"results": results}
 
 

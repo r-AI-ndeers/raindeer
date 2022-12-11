@@ -155,7 +155,7 @@ def image_pipeline(img_filename, multithreading_flag=True):
             
             try:
                 
-                for task in as_completed(threads, timeout=10):
+                for task in as_completed(threads, timeout=15):
                     filenames = task.result()
                     all_img_filenames.extend(filenames)
                     
@@ -168,7 +168,7 @@ def image_pipeline(img_filename, multithreading_flag=True):
 
 if __name__ == '__main__':
     start_time = time.time()
-    filenames = image_pipeline("imgs/Photo on 10.12.22 at 21.34.jpg")
+    filenames = image_pipeline("imgs/Photo on 10.12.22 at 18.06.jpg")
     end_time = time.time()
     print(f"image pipeline took: {np.round(end_time - start_time, 2)} seconds")
     print(filenames)
