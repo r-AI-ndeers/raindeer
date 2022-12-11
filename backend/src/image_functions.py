@@ -151,7 +151,7 @@ def image_pipeline(img_filename, multithreading_flag=True):
             
     else:
         
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor(max_workers=7) as executor:
             
             for prompt in prompts:
                 threads.append(executor.submit(stable_diffusionize, img, mask, prompt, stability_token, s3_uploader))

@@ -115,7 +115,7 @@ def generate_poem(
     threads = []
 
     if settings.MODEL == "CHATGPT":
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor(max_workers=3) as executor:
             for style in promptStyles:
                 threads.append(executor.submit(get_chatgpt_poem, style, data))
             try:
@@ -130,7 +130,7 @@ def generate_poem(
         print(f"Time taken for poem generation: {np.round(t2-t1,2)}") 
         return {"results": results}
     else:
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor(max_workers=3) as executor:
             for style in promptStyles:
                 threads.append(executor.submit(get_poem, style, data))
             try:
