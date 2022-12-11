@@ -10,6 +10,7 @@ export function ImageBackgroundLayout({children}: {children: React.ReactNode}) {
             display="flex"
             alignItems="center"
             paddingY={"64px"}
+            paddingX={"16px"}
             flexDirection="column"
             style={{
                 backgroundImage: `url(${mainbackground})`,

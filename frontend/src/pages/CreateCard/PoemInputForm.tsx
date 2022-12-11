@@ -13,6 +13,7 @@ import {GeneratedData} from "./CreateCard";
 import {ViewData} from "./Preview";
 import {ImageUpload} from "./ImageUpload";
 import {BACKEND_URL} from "../../consts";
+import {green} from "@mui/material/colors";
 
 interface UserInput {
     recipientName: string;
@@ -142,8 +143,10 @@ export function PoemInputForm({
 
     const onSubmit = handleSubmit(async (data) => {
         setIsLoading(true);
-        const generatedPoem = await generatePoem(data);
-        const generatedImages = await generateImages(image);
+        const [generatedPoem, generatedImages] = await Promise.all([
+            generatePoem(data),
+            generateImages(image)
+        ])
         if (generatedPoem) {
             setGeneratedData({
                 generatedPoems: generatedPoem.results,
@@ -210,7 +213,7 @@ export function PoemInputForm({
                     variant={"contained"}
                     type={"submit"}
                     size={"large"}
-                    style={{backgroundColor: isLoading ? "grey" : "#2E7D32"}}
+                    style={{backgroundColor: isLoading ? "grey" : green[500]}}
                 >
                     {!isLoading ? <Typography>Next</Typography> : <CircularProgress/>}
                 </Button>

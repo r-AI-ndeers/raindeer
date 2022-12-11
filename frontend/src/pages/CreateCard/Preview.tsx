@@ -1,6 +1,7 @@
 import React from "react";
 import {Box, Button, Typography} from "@mui/material";
 import {CreationStage} from "../../components/Stepper";
+import {BACKEND_URL} from "../../consts";
 
 
 export interface ViewData {
@@ -11,21 +12,25 @@ export interface ViewData {
 
 type PreviewProps = ViewData & {
     setActiveStep: React.Dispatch<React.SetStateAction<CreationStage>>;
+    setCardId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-export function Preview({poem, from, image, setActiveStep}: PreviewProps) {
+export function Preview({poem, from, image, setActiveStep, setCardId}: PreviewProps) {
 
     const publish = async () => {
-        // await fetch(`${BACKEND_URL}/publish`, {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({
-        //         poem: poem,
-        //         from: from,
-        //     }),
-        // })
+        await fetch(`${BACKEND_URL}/publish`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                poem: poem,
+                from: from,
+                image: image,
+            }),
+        }).then(response => response.json()).then((data) => {
+            setCardId(data.id);
+        })
         setActiveStep("publish");
     }
 
@@ -74,7 +79,6 @@ export function Preview({poem, from, image, setActiveStep}: PreviewProps) {
                     variant={"contained"}
                     onClick={async () => await publish()}
                     size={"large"}
-                    style={{backgroundColor: "#2E7D32"}}
                 >
                     Publish
                 </Button>
