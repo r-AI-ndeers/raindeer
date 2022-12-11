@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     AWS_SECRET_KEY: str = 'AWS_SECRET_KEY'
     DB_URL: str = 'DB_URL'
     FIREBASE_PATH: str = 'FIREBASE_PATH'
-    
+
     class Config:
         env_file = '.env'
 
@@ -36,6 +36,7 @@ databaseURL = settings.DB_URL
 default_app = firebase_admin.initialize_app(cred_obj, {
     'databaseURL':databaseURL
 })
+
 
 class GeneratePoemInput(BaseModel):
     receiver: str
