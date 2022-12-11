@@ -109,7 +109,9 @@ const generatePoem = async (userInput: UserInput) => {
         body: JSON.stringify(userInputToGenerateRequest(userInput)),
     }).then(response => response.json()).then((data: GeneratePoemResponse) => {
         return data
-    });
+    }).catch((error) => {
+        console.log(error)
+    })
 }
 
 interface GenerateImageResponse {
@@ -129,7 +131,9 @@ const generateImages = async (image: File | null) => {
       body: data
     }).then(response => response.json()).then((data: GenerateImageResponse) => {
         return data
-    });
+    }).catch((error) => {
+        console.log(error)
+    })
 }
 
 export function PoemInputForm({
@@ -140,6 +144,7 @@ export function PoemInputForm({
     const {control, handleSubmit, formState: {errors}} = useForm<UserInput>();
     const [image, setImage] = React.useState<File | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isError, setIsError] = React.useState(false);
 
     const onSubmit = handleSubmit(async (data) => {
         setIsLoading(true);
@@ -147,15 +152,18 @@ export function PoemInputForm({
             generatePoem(data),
             generateImages(image)
         ])
-        if (generatedPoem) {
+        if (generatedPoem && generatedImages) {
             setGeneratedData({
                 generatedPoems: generatedPoem.results,
                 generatedImages: generatedImages.results,
             });
+            setViewData((prevState) => ({...prevState, from: data.senderName}))
+            setIsLoading(false);
+            setActiveStep("edit")
+        } else {
+            setIsError(true);
+            setIsLoading(false)
         }
-        setViewData((prevState) => ({...prevState, from: data.senderName}))
-        setIsLoading(false);
-        setActiveStep("edit")
     });
 
     return (
@@ -217,6 +225,7 @@ export function PoemInputForm({
                 >
                     {!isLoading ? <Typography>Next</Typography> : <CircularProgress/>}
                 </Button>
+                <Typography variant={"body1"} color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
             </Stack>
         </form>
     )
