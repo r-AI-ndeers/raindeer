@@ -37,7 +37,6 @@ default_app = firebase_admin.initialize_app(cred_obj, {
     'databaseURL':databaseURL
 })
 
-
 class GeneratePoemInput(BaseModel):
     receiver: str
     likes: str
@@ -149,11 +148,8 @@ def upload_img(img):
 @app.get("/card")  
 async def card(id):
     ref = db.reference('cards')
-    cards = ref.order_by_child('id').equal_to(id).get()
-    return cards
-    #for c in cards.items():
-    #    print(c)
-    #return {}
+    card = ref.order_by_child('id').equal_to(id).get()
+    return card
 
 @app.post("/publish")
 async def publish(poem, sender, image): # from not ideal term for python variable....
