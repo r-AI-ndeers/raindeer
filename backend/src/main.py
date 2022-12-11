@@ -37,6 +37,7 @@ default_app = firebase_admin.initialize_app(cred_obj, {
     'databaseURL':databaseURL
 })
 
+
 class GeneratePoemInput(BaseModel):
     receiver: str
     likes: str
