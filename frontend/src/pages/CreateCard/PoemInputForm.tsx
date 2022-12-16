@@ -147,16 +147,24 @@ export function PoemInputForm({
     const [isError, setIsError] = React.useState(false);
 
     const onSubmit = handleSubmit(async (data) => {
+
         setIsLoading(true);
-        const generatedPoem = await generatePoem(data);
-        const generatedImages = await generateImages(image);
+        let generatedPoem = await generatePoem(data);
+        // hacky retry
+        if (generatedPoem === undefined || generatedPoem === null) {
+            generatedPoem = await generatePoem(data);
+        }
+        let generatedImages = await generateImages(image);
+        if (generatedImages === undefined || generatedImages === null) {
+            generatedImages = await generateImages(image);
+        }
 
         if (generatedPoem && generatedImages) {
             setGeneratedData({
                 generatedPoems: generatedPoem.results,
                 generatedImages: generatedImages.results,
             });
-            setViewData((prevState) => ({...prevState, from: data.senderName}))
+            setViewData((prevState) => ({...prevState, sender: data.senderName}))
             setIsLoading(false);
             setActiveStep("edit")
         } else {
@@ -191,22 +199,6 @@ export function PoemInputForm({
                     control={control}
                     formFieldError={errors.likes}
                 />
-                {/*<InputTextField*/}
-                {/*    title={"What interests this person?"}*/}
-                {/*    subtitle={"For example “games“ or “coding“."}*/}
-                {/*    field={"interests"}*/}
-                {/*    isRequired*/}
-                {/*    control={control}*/}
-                {/*    formFieldError={errors.interests}*/}
-                {/*/>*/}
-                {/* commented out for now because it's just too many fields */}
-                {/*<InputTextField*/}
-                {/*    title={"Who is this person to you?"}*/}
-                {/*    subtitle={"For example “an awesome friend”, “a great colleague”, “my grandma“, etc."}*/}
-                {/*    field={"person"}*/}
-                {/*    control={control}*/}
-                {/*    formFieldError={errors.person}*/}
-                {/*/>*/}
                 <InputTextField
                     title={"Give us a (funny) fact about this person"}
                     isRequired
