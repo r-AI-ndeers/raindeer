@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from backend.src.settings import GLOBAL_SETTINGS
+from src.settings import GLOBAL_SETTINGS
 
 
 def register_routes(app):
-    from backend.src.routes import poem, image, card, publish
+    from src.routes import poem, image, card, publish
 
     app.include_router(poem.router)
     app.include_router(image.router)

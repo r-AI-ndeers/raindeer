@@ -1,4 +1,4 @@
-from backend.src.generation.poem import GeneratePoemInput, generate_poem
+from src.generation.poem import GeneratePoemInput, generate_poem
 from fastapi import APIRouter
 
 router = APIRouter()

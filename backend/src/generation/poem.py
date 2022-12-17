@@ -9,7 +9,7 @@ import re
 from pydantic import BaseModel
 from revChatGPT.revChatGPT import Chatbot
 
-from backend.src.settings import GLOBAL_SETTINGS
+from src.settings import GLOBAL_SETTINGS
 
 class GeneratePoemInput(BaseModel):
     receiver: str
@@ -81,7 +81,7 @@ async def get_poem_from_openai(style, data):
 
 
 async def get_poem_from_chatgpt(style, data):
-    from backend.src.settings import GLOBAL_SETTINGS
+    from src.settings import GLOBAL_SETTINGS
     email = GLOBAL_SETTINGS.CHATGPT_EMAIL
     password = GLOBAL_SETTINGS.CHATGPT_PASSWORD
     config = {

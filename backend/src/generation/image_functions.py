@@ -1,4 +1,4 @@
-import asyncio
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
 
 import requests
@@ -9,12 +9,12 @@ import base64
 import io
 import os
 from dotenv import load_dotenv
+from src.generation.image_preprocessing import preprocess_imgs
 
-from backend.src.generation.image_preprocessing import preprocess_imgs
-from backend.src.settings import GLOBAL_SETTINGS
+from src.settings import GLOBAL_SETTINGS
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-from backend.src.s3_functions import S3_UPLOADER
+from src.s3_functions import S3_UPLOADER
 
 load_dotenv()
 huggingface_token = GLOBAL_SETTINGS.HUGGINGFACE_TOKEN
@@ -84,7 +84,8 @@ def init_stable_diffusion(stability_token):
     return stability_api
 
 
-async def stable_diffusionize(img, mask, prompt, stability_token, S3_UPLOADER) -> List[str]:
+def stable_diffusionize(img, mask, prompt, stability_token, S3_UPLOADER) -> List[
+    str]:
     stability_api = init_stable_diffusion(stability_token)
 
     output = stability_api.generate(
@@ -120,7 +121,7 @@ async def stable_diffusionize(img, mask, prompt, stability_token, S3_UPLOADER) -
     return urls
 
 
-async def image_pipeline(img_filename, multithreading_flag=True):
+def image_pipeline(img_filename, multithreading_flag=True):
     img = Image.open(img_filename)
     # Fix the exif orientation
     img = ImageOps.exif_transpose(img)
@@ -141,14 +142,27 @@ async def image_pipeline(img_filename, multithreading_flag=True):
         f"A handsome person ((wearing a santa hat and an ugly christmas sweater)), pixel art, surrounded by presents, space ship in the background",
     ]
     all_img_urls = []
+    threads = []
     if not multithreading_flag:
         for prompt in prompts:
-            filenames = stable_diffusionize(img, mask, prompt, stability_token,
-                                            S3_UPLOADER)
-            all_img_urls.extend(filenames)
+            urls = stable_diffusionize(img, mask, prompt, stability_token,
+                                                  S3_UPLOADER)
+            all_img_urls.extend(urls)
     else:
-        tasks = [stable_diffusionize(img, mask, prompt, stability_token, S3_UPLOADER) for prompt in prompts]
-        generated_urls_per_prompt = await asyncio.gather(*tasks)
-        all_img_urls = [url for urls in generated_urls_per_prompt for url in urls]
+        with ThreadPoolExecutor(max_workers=7) as executor:
+            for prompt in prompts:
+                threads.append(executor.submit(stable_diffusionize, img, mask,
+                                               prompt, stability_token, S3_UPLOADER))
+
+            try:
+
+                for task in as_completed(threads, timeout=15):
+                    urls = task.result()
+                    all_img_urls.extend(urls)
+
+            except Exception as e:
+                print(e)
+                for task in threads:
+                    task.cancel()
 
     return all_img_urls
