@@ -1,5 +1,5 @@
 import React from "react";
-import {Typography} from "@mui/material";
+import {Button, Typography} from "@mui/material";
 import {useParams} from "react-router-dom";
 import {ImageBackgroundLayout} from "../components/Layout";
 import {BACKEND_URL} from "../consts";
@@ -46,6 +46,14 @@ export function ViewCard() {
     return (
         <ImageBackgroundLayout>
             <ChristmasCard poem={viewData.poem} image={viewData.image} sender={viewData.sender} />
+            <Button
+                variant={"contained"}
+                style={{marginTop: "64px"}}
+                href={"/"}
+                size={"large"}
+            >
+                Create your own card with AI!
+            </Button>
         </ImageBackgroundLayout>
     )
 }

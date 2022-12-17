@@ -49,14 +49,6 @@ export const ChristmasCard = ({image, poem, sender}: ChristmasCardProps) => {
                 Merry Christmas! <br/>
                 - From {sender}
             </Typography>
-            <Button
-                variant={"contained"}
-                style={{marginTop: "64px"}}
-                href={"/"}
-                size={"large"}
-            >
-                Create your own card with AI!
-            </Button>
         </Box>
     )
 }

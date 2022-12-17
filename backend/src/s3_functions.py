@@ -24,3 +24,8 @@ class S3Uploader:
         s3_url = f'https://raindeers-bucket.s3.eu-central-1.amazonaws.com/temp_imgs/{uuid_filename}'
         print(f'uploaded to s3: {s3_url}')
         return s3_url
+
+
+aws_key = os.getenv("AWS_KEY")
+aws_secret_key = os.getenv("AWS_SECRET_KEY")
+S3_UPLOADER = S3Uploader('raindeers-bucket', aws_key, aws_secret_key, 'eu-central-1')

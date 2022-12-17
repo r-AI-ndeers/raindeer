@@ -1,3 +1,6 @@
+import asyncio
+from typing import List
+
 import requests
 import numpy as np
 import json
@@ -6,30 +9,26 @@ import base64
 import io
 import os
 from dotenv import load_dotenv
-from .image_preprocessing import preprocess_imgs
-import time
+
+from backend.src.generation.image_preprocessing import preprocess_imgs
+from backend.src.settings import GLOBAL_SETTINGS
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-from .s3_functions import S3Uploader
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-
+from backend.src.s3_functions import S3_UPLOADER
 
 load_dotenv()
-huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
-masking_api_url = "https://api-inference.huggingface.co/models/clearspandex/face-parsing"
-#alternative model: masking_api_url = "https://api-inference.huggingface.co/models/facebook/detr-resnet-50-panoptic"
+huggingface_token = GLOBAL_SETTINGS.HUGGINGFACE_TOKEN
+
+MASKING_API_URL = "https://api-inference.huggingface.co/models/clearspandex/face-parsing"
+# alternative model: MASKING_API_URL = "https://api-inference.huggingface.co/models/facebook/detr-resnet-50-panoptic"
 
 masking_api_headers = {
-    "Authorization": f"Bearer {huggingface_token}", "wait_for_model": "True"}
+    "Authorization": f"Bearer {huggingface_token}", "wait_for_model": "True"
+}
 stability_token = os.getenv("STABLITY_TOKEN")
-aws_key = os.getenv("AWS_KEY")
-aws_secret_key = os.getenv("AWS_SECRET_KEY")
-s3_uploader = S3Uploader('raindeers-bucket', aws_key, aws_secret_key, 'eu-central-1')
 
 
 def query(filename, API_URL, headers):
-
     with open(filename, "rb") as f:
         img = base64.b64encode(f.read())
 
@@ -52,7 +51,8 @@ def mask_img(img_path, API_URL, headers):
     not_face_labels = ['background', 'hat.png',
                        'ear_r.png', 'ear_l.png', 'hair.png']
     good_labels = [label for label in labels if label not in not_face_labels]
-    good_labels.append(['person', 'woman', 'man', 'cat', 'dog']) #in case alternative model is used
+    good_labels.append(
+        ['person', 'woman', 'man', 'cat', 'dog'])  # in case alternative model is used
 
     # filter only desired labels
     face_masks = []
@@ -67,7 +67,7 @@ def mask_img(img_path, API_URL, headers):
     for mask in face_masks:
         all_masks += (mask > 0)
 
-    mask = Image.fromarray(all_masks*255)
+    mask = Image.fromarray(all_masks * 255)
     return mask
 
 
@@ -84,16 +84,15 @@ def init_stable_diffusion(stability_token):
     return stability_api
 
 
-def stable_diffusionize(img, mask, prompt, stability_token, s3_uploader):
+async def stable_diffusionize(img, mask, prompt, stability_token, S3_UPLOADER) -> List[str]:
     stability_api = init_stable_diffusion(stability_token)
 
-    
     output = stability_api.generate(
         prompt=prompt,
         init_image=Image.fromarray(img),
         mask_image=Image.fromarray(mask),
         start_schedule=1,
-        #guidance_strength=0.25,
+        # guidance_strength=0.25,
         samples=3,
         steps=30,
         cfg_scale=7,
@@ -106,7 +105,7 @@ def stable_diffusionize(img, mask, prompt, stability_token, s3_uploader):
         for artifact in resp.artifacts:
             if artifact.finish_reason == generation.FILTER:
                 print("nsfw filter hit")
-            
+
             elif artifact.type == generation.ARTIFACT_IMAGE:
                 img = Image.open(io.BytesIO(artifact.binary))
                 # filename = f"{prompt[:60]}_{counter}.png"
@@ -114,21 +113,20 @@ def stable_diffusionize(img, mask, prompt, stability_token, s3_uploader):
                 # print(f'saved {filename}')
                 # filenames.append(filename)
                 # counter += 1
-                url = s3_uploader.upload_to_s3(img)
+                url = S3_UPLOADER.upload_to_s3(img)
                 urls.append(url)
                 counter += 1
-                
+
     return urls
 
 
-
-def image_pipeline(img_filename, multithreading_flag=True):
+async def image_pipeline(img_filename, multithreading_flag=True):
     img = Image.open(img_filename)
     # Fix the exif orientation
     img = ImageOps.exif_transpose(img)
 
     img = np.array(img)
-    mask = mask_img(img_filename, API_URL=masking_api_url,
+    mask = mask_img(img_filename, API_URL=MASKING_API_URL,
                     headers=masking_api_headers)
     # mask.save("imgs/mask.jpg")  # just some local backup for debugging
     img, mask = preprocess_imgs(img, mask)
@@ -138,40 +136,19 @@ def image_pipeline(img_filename, multithreading_flag=True):
         "person with reindeer horns, great resolution, forest in background",
         "cyberpunk christmas image. a person with santa hat, christmas tree, this pastel painting by the award - winning children's book author has interesting color contrasts, plenty of details and impeccable lighting. great resolution | hands:-1.0",
         "Pencil drawing, portrait and gifts, christmassy setting, beach boy | hands:-1.0",
-         "Christmassy portrait, in a suit with santa clause hat, oil painting, christmas tree in back",
-         f"A person wearing a santa hat, by the beach, beachwear, great resolution",
-         f"A handsome person ((wearing a santa hat and an ugly christmas sweater)), pixel art, surrounded by presents, space ship in the background",
+        "Christmassy portrait, in a suit with santa clause hat, oil painting, christmas tree in back",
+        f"A person wearing a santa hat, by the beach, beachwear, great resolution",
+        f"A handsome person ((wearing a santa hat and an ugly christmas sweater)), pixel art, surrounded by presents, space ship in the background",
     ]
-    all_img_filenames = []
-    threads = []
+    all_img_urls = []
     if not multithreading_flag:
         for prompt in prompts:
-            filenames = stable_diffusionize(img, mask, prompt, stability_token, s3_uploader)
-            all_img_filenames.extend(filenames)
-            
+            filenames = stable_diffusionize(img, mask, prompt, stability_token,
+                                            S3_UPLOADER)
+            all_img_urls.extend(filenames)
     else:
-        
-        with ThreadPoolExecutor(max_workers=7) as executor:
-            
-            for prompt in prompts:
-                threads.append(executor.submit(stable_diffusionize, img, mask, prompt, stability_token, s3_uploader))
-            
-            try:
-                
-                for task in as_completed(threads, timeout=15):
-                    filenames = task.result()
-                    all_img_filenames.extend(filenames)
-                    
-            except Exception as e:
-                print(e)
-                for task in threads:
-                    task.cancel()            
+        tasks = [stable_diffusionize(img, mask, prompt, stability_token, S3_UPLOADER) for prompt in prompts]
+        generated_urls_per_prompt = await asyncio.gather(*tasks)
+        all_img_urls = [url for urls in generated_urls_per_prompt for url in urls]
 
-    return all_img_filenames
-
-if __name__ == '__main__':
-    start_time = time.time()
-    filenames = image_pipeline("imgs/Photo on 10.12.22 at 18.06.jpg")
-    end_time = time.time()
-    print(f"image pipeline took: {np.round(end_time - start_time, 2)} seconds")
-    print(filenames)
+    return all_img_urls

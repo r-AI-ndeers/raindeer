@@ -36,7 +36,7 @@ export function Preview({poem, sender, image, setActiveStep, setCardId}: Preview
     }
 
     return (
-        <Box display={"flex"} flexDirection={"column"}>
+        <Box display={"flex"} flexDirection={"column"} gap={"32px"}>
             <ChristmasCard poem={poem} image={image} sender={sender} />
             <Box display={"flex"} justifyContent={"flex-end"} gap={"16px"}>
                 <Button
