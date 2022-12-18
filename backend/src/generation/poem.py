@@ -41,17 +41,19 @@ async def generate_poem(data: GeneratePoemInput):
 
 def generate_prompt(style, receiver="", likes="", interests="", verseCount=3, person="",
                     fact="") -> str:
-    PROMPT_SIMPLE = "Christmas poem to {}, they likes {} and is interested in {}, {} verses".format(
-        receiver, likes, interests, verseCount)
+    PROMPT_SIMPLE = "Christmas poem to {}, they likes {} and {}, {} verses".format(
+        receiver, likes, fact, verseCount)
+    print(PROMPT_SIMPLE)
     if style == "simple":
         return PROMPT_SIMPLE
     elif style == "personal":
         return "Write a {} paragraph Christmas poem to {} who is {} and who loves {}. {} is {}.".format(
             verseCount, receiver, person, likes, receiver, fact)
     elif style == "street":
-        return PROMPT_SIMPLE + ", ghetto style Christmas poem."
+        return PROMPT_SIMPLE + ", write it in ghetto style."
     elif style == "shakespeare":
-        return PROMPT_SIMPLE + ", Shakespeare style Christmas poem."
+        return PROMPT_SIMPLE + ", write it in the style of Shakespeare."
+
     return PROMPT_SIMPLE
 
 
