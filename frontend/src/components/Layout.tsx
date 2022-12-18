@@ -1,4 +1,4 @@
-import mainbackground from "../assets/mainbackground.jpg";
+import mainbackground from "../assets/consts.jpeg";
 import {Box} from "@mui/material";
 
 

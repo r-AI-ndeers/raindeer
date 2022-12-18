@@ -72,7 +72,7 @@ export function ImageUpload({setImage}: ImageUploadProps) {
 
     return (
         <Box display={"flex"} flexDirection={"column"} gap={"16px"}>
-            <Typography variant={"h4"}>Upload a selfie</Typography>
+            <Typography variant={"h4"}><b>Upload a selfie</b></Typography>
             <Typography variant={"body2"}>We will apply special Christmas filters to
                 make your image suit the Christmas spirit! It works best when you upload
                 a selfie of yourself or the person who you want to gift the card

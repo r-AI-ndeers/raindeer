@@ -9,6 +9,7 @@ const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
 );
 
+
 export const primaryColor = "#3E6235";
 
 let theme = createTheme({

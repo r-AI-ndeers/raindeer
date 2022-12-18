@@ -1,4 +1,4 @@
-import {Control, Controller, FieldError, useForm} from "react-hook-form";
+import { Control, Controller, FieldError, useForm } from "react-hook-form";
 import {
     BaseTextFieldProps,
     Box,
@@ -7,14 +7,14 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import React, {useEffect} from "react";
-import {CreationStage} from "../../components/Stepper";
-import {GeneratedData} from "./CreateCard";
-import {ViewData} from "./Preview";
-import {ImageUpload} from "./ImageUpload";
-import {BACKEND_URL} from "../../consts";
-import {primaryColor} from "../../index";
-import {useGenerateImages} from "../../hooks/generateImages";
+import React, { useEffect } from "react";
+import { CreationStage } from "../../components/Stepper";
+import { GeneratedData } from "./CreateCard";
+import { ViewData } from "./Preview";
+import { ImageUpload } from "./ImageUpload";
+import { BACKEND_URL } from "../../consts";
+import { primaryColor } from "../../index";
+import { useGenerateImages } from "../../hooks/generateImages";
 
 interface UserInput {
     recipientName: string;
@@ -35,37 +35,38 @@ type InputTextFieldProps = {
 } & BaseTextFieldProps;
 
 function InputTextField({
-                            title,
-                            field,
-                            subtitle,
-                            control,
-                            formFieldError,
-                            isRequired = false,
-                            ...textFieldProps
-                        }: InputTextFieldProps) {
+    title,
+    field,
+    subtitle,
+    control,
+    formFieldError,
+    isRequired = false,
+    ...textFieldProps
+}: InputTextFieldProps) {
 
     return (
-        <Box display={"flex"}>
-            <Stack direction={"column"} gap={"8px"}>
-                <Typography
-                    variant={"h5"}>{title}{isRequired ? "*" : " (optional)"}</Typography>
-                <Typography variant={"body2"}>{subtitle}</Typography>
-                <Controller
-                    name={field}
-                    control={control}
-                    rules={{required: isRequired}}
-                    render={({field}) =>
-                        <TextField
-                            {...field}
-                            error={!!formFieldError}
-                            helperText={!!formFieldError && "This field is required"}
-                            variant={"outlined"}
-                            style={{backgroundColor: "white",}}
-                            {...textFieldProps}
-                        />
-                    }
-                />
-            </Stack>
+        <Box display={"flex"} flexDirection={"column"} flexGrow={"1"} gap={"8px"}>
+            <Typography
+                variant={"h6"}>{title}</Typography>
+            <Typography variant={"body2"}>{subtitle}</Typography>
+            <Controller
+                name={field}
+                control={control}
+                rules={{ required: isRequired }}
+                render={({ field }) =>
+                    <TextField
+                        {...field}
+                        error={!!formFieldError}
+                        helperText={!!formFieldError && "This field is required"}
+                        variant={"outlined"}
+                        style={{
+                            backgroundColor: "white",
+                            opacity: 0.75
+                        }}
+                        {...textFieldProps}
+                    />
+                }
+            />
         </Box>
     )
 }
@@ -118,12 +119,12 @@ const generatePoem = async (userInput: UserInput) => {
 
 
 export function PoemInputForm({
-                                  setActiveStep,
-                                  setGeneratedData,
-                                  setViewData,
-                                  generatedData
-                              }: PoemInputFormProps) {
-    const {control, handleSubmit, formState: {errors}} = useForm<UserInput>();
+    setActiveStep,
+    setGeneratedData,
+    setViewData,
+    generatedData
+}: PoemInputFormProps) {
+    const { control, handleSubmit, formState: { errors } } = useForm<UserInput>();
     const [image, setImage] = React.useState<File | null>(null);
     const [isLoadingPoem, setIsLoadingPoem] = React.useState(false);
     const [isError, setIsError] = React.useState(false);
@@ -140,7 +141,7 @@ export function PoemInputForm({
                 ...prevState,
                 generatedPoems: generatedPoem.results,
             }));
-            setViewData((prevState) => ({...prevState, sender: data.senderName}))
+            setViewData((prevState) => ({ ...prevState, sender: data.senderName }))
             setIsLoadingPoem(false);
         } else {
             setIsError(true);
@@ -151,9 +152,9 @@ export function PoemInputForm({
     useEffect(() => {
         console.log("setting images useeffect")
         setGeneratedData((prevState) => ({
-                ...prevState,
-                generatedImages: generatedImages
-            })
+            ...prevState,
+            generatedImages: generatedImages
+        })
         )
     }, [generatedImages.length, setGeneratedData])
 
@@ -183,61 +184,70 @@ export function PoemInputForm({
 
     return (
         <form onSubmit={onSubmit}>
-            <Stack direction={"column"} gap={"16px"} maxWidth={"600px"}>
-                <ImageUpload setImage={setImage}/>
-                <Typography variant={"h4"}>Input for poem</Typography>
-                <InputTextField
-                    title={"From"}
-                    field={"senderName"}
-                    control={control}
-                    isRequired
-                    formFieldError={errors.senderName}
-                />
-                <InputTextField
-                    title={"To"}
-                    isRequired
-                    field={"recipientName"}
-                    control={control}
-                    formFieldError={errors.recipientName}
-                />
-                <InputTextField
-                    title={"What does this person like?"}
-                    subtitle={"For example “bikes”, “writing poems”, “having fun with friends”, etc."}
-                    field={"likes"}
-                    isRequired
-                    control={control}
-                    formFieldError={errors.likes}
-                />
-                <InputTextField
-                    title={"Give us a (funny) fact about this person"}
-                    isRequired
-                    subtitle={"For example “sings in the shower“, “has travelled 5 countries“, etc."}
-                    field={"fact"}
-                    control={control}
-                    formFieldError={errors.fact}
-                />
-                <Box display={"flex"} flexDirection={"column"} alignItems={"center"}
-                     justifyContent={"center"} marginTop={"32px"}>
-                    <Typography>(Generation can take up to a minute)</Typography>
-                    <Button
-                        disabled={isLoading}
-                        variant={"contained"}
-                        type={"submit"}
-                        size={"large"}
-                        style={{backgroundColor: isLoading ? "grey" : primaryColor}}
-                    >
-                        {!isLoading ?
-                            <Typography>Generate</Typography> :
-                            <Box display={"flex"} gap={"4px"} alignItems={"center"}>
-                                <CircularProgress size={"1rem"}/>
-                                <Typography>Generating...</Typography>
-                            </Box>
-                        }
-                    </Button>
-                </Box>
+            <Box display="flex" flexDirection={"column"} gap={"64px"} maxWidth={"600px"}>
+                <ImageUpload setImage={setImage} />
+                <Stack display="flex" flexDirection="column" gap="32px">
+                    <Typography variant={"h4"}><b>Input for poem</b></Typography>
+                    <Box display="flex" gap="32px">
+                        <InputTextField
+                            title={"From"}
+                            placeholder="John"
+                            field={"senderName"}
+                            control={control}
+
+                            isRequired
+                            formFieldError={errors.senderName}
+                        />
+                        <InputTextField
+                            title={"To"}
+                            placeholder="Jane"
+                            isRequired
+                            field={"recipientName"}
+                            control={control}
+                            formFieldError={errors.recipientName}
+                        /></Box>
+                    
+                    <InputTextField
+                        title={"What does this person like?"}
+                        placeholder={"bikes, writing poems, having fun with friends"}
+                        field={"likes"}
+
+                        isRequired
+                        control={control}
+                        formFieldError={errors.likes}
+                    />
+                    <InputTextField
+                        title={"Give us a (funny) fact about this person"}
+                        isRequired
+                        placeholder={"sings in the shower, has travelled 5 countries"}
+                        field={"fact"}
+                        control={control}
+                        formFieldError={errors.fact}
+                    />
+                    <Box display={"flex"} flexDirection={"column"} alignItems={"center"}
+                        justifyContent={"center"} marginTop={"32px"} gap="16px">
+                        <Button
+                            disabled={isLoading}
+                            variant={"contained"}
+                            type={"submit"}
+                            size={"large"}
+                            style={{ backgroundColor: isLoading ? "grey" : primaryColor }}
+                        >
+                            {!isLoading ?
+                                <Typography>Generate</Typography> :
+                                <Box display={"flex"} gap={"4px"} alignItems={"center"}>
+                                    <CircularProgress size={"1rem"} />
+                                    <Typography>Generating...</Typography>
+                                </Box>
+                            }
+                        </Button>
+                        <Typography color="gray"><i>Generation can take up to a minute</i></Typography>
+
+                    </Box>
+                </Stack>
                 <Typography variant={"body1"}
-                            color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
-            </Stack>
-        </form>
+                    color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
+            </Box>
+        </form >
     )
 }
