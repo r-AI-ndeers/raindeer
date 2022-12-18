@@ -150,7 +150,6 @@ export function PoemInputForm({
     });
 
     useEffect(() => {
-        console.log("setting images useeffect")
         setGeneratedData((prevState) => ({
             ...prevState,
             generatedImages: generatedImages
@@ -178,8 +177,6 @@ export function PoemInputForm({
     // already done
     const isWaitingOnImageGeneration = isImageGenerationLoading && generatedData.generatedPoems.length > 0;
     const isLoading = isLoadingPoem || isWaitingOnImageGeneration;
-
-    console.log(isLoading, generatedData, image, generatedImages)
 
 
     return (
