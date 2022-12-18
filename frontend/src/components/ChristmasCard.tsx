@@ -1,5 +1,6 @@
 import {Box, Button, Typography} from "@mui/material";
 import React from "react";
+import {SnowEffect} from "./Snow/SnowEffect";
 
 
 interface ChristmasCardProps {
@@ -49,6 +50,7 @@ export const ChristmasCard = ({image, poem, sender}: ChristmasCardProps) => {
             >
                 {poem}
             </Typography>
+            <SnowEffect />
         </Box>
     )
 }

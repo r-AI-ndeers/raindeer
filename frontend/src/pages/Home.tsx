@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from 'react';
+import React from 'react';
 import {Box, Button, Typography} from "@mui/material";
 import {ImageBackgroundLayout} from "../components/Layout";
 import {MOCK_CARD_ID} from "../consts";
@@ -16,7 +16,7 @@ export function Home() {
                     <b>r<Typography variant="h1" display={"inline"} color={primaryColor}><b>AI</b></Typography>ndeers</b>
                 </Typography>
                 <Typography variant="h3" textAlign={"center"}>
-                    Create personalised cards for people dear to you with AI!
+                    Create a sharable personalised card for people dear to you with AI!
                 </Typography>
                 <Box display={"flex"} gap={"16px"}>
                     <Button
@@ -44,11 +44,11 @@ export function Home() {
                         <Box display="flex" alignItems={"center"} gap={"16px"}>
                             <ImageIcon style={{fontSize:"48px"} }/>
                             <Typography variant={"h4"}>
-                                Photos
+                                Photo
                             </Typography>
                         </Box>
                         <Typography variant={"h6"} textAlign={"center"}>
-                            Upload photo of you or your friends and have them modified for the Christmas spirit!
+                            Upload a photo of you or your friends and have them modified for the Christmas spirit
                         </Typography>
                     </Box>
                     <Box display={"flex"} flex={"0 1 300px"} flexDirection={"column"} gap={"16px"} alignItems={"center"} textAlign={"center"}>
@@ -59,7 +59,7 @@ export function Home() {
                             </Typography>
                         </Box>
                         <Typography variant={"h6"}>
-                            Our AI will generate a unique poem for you based on some facts about the person.
+                            Our AI will generate a unique poem for you based on some facts about the person
                         </Typography>
                     </Box>
                 </Box>

@@ -158,7 +158,9 @@ export function PoemInputForm({
     }, [generatedImages.length, setGeneratedData])
 
     useEffect(() => {
-        if (image !== null && generatedData.generatedPoems.length > 0 && generatedData.generatedImages.length > 0) {
+        const imageAndPoemReady = image !== null && generatedData.generatedPoems.length > 0 && generatedData.generatedImages.length > 0
+        const justPoemReady = image === null && generatedData.generatedPoems.length > 0
+        if (imageAndPoemReady || justPoemReady) {
             setActiveStep("edit")
         }
     }, [generatedData.generatedPoems.length, generatedData.generatedImages.length, image])
@@ -166,10 +168,10 @@ export function PoemInputForm({
     // clear previous data on load
     // TODO: better save state when going back
     useEffect(() => {
-        setGeneratedData((prevState) => ({
+        setGeneratedData({
             generatedPoems: [],
             generatedImages: [],
-        }))
+        })
     }, [])
 
     // since image generation is happening in the background on upload only we don't
