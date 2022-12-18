@@ -16,7 +16,7 @@ export function Home() {
                     <b>r<Typography variant="h1" display={"inline"} color={primaryColor}><b>AI</b></Typography>ndeers</b>
                 </Typography>
                 <Typography variant="h3" textAlign={"center"}>
-                    Create a sharable personalised card for people dear to you with AI!
+                    Create sharable and personalised Christmas cards for people dear to you with AI!
                 </Typography>
                 <Box display={"flex"} gap={"16px"}>
                     <Button
