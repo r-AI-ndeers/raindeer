@@ -25,14 +25,16 @@ export function Home() {
                         size={"large"}
                         style={{backgroundColor: "gray"}}
                     >
-                        View example card
+                        <Typography variant={"h6"}>
+                            View example card
+                        </Typography>
                     </Button>
                     <Button
                         size="large"
                         href={"/create"}
                         variant={"contained"}
                     >
-                        <Typography color={"common.white"}>
+                        <Typography variant={"h6"} color={"common.white"}>
                             Create a card
                         </Typography>
                     </Button>
