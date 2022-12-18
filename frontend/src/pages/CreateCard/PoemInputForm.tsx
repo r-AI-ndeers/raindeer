@@ -7,13 +7,14 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import React from "react";
+import React, {useEffect} from "react";
 import {CreationStage} from "../../components/Stepper";
 import {GeneratedData} from "./CreateCard";
 import {ViewData} from "./Preview";
 import {ImageUpload} from "./ImageUpload";
 import {BACKEND_URL} from "../../consts";
 import {primaryColor} from "../../index";
+import {useGenerateImages} from "../../hooks/generateImages";
 
 interface UserInput {
     recipientName: string;
@@ -34,14 +35,14 @@ type InputTextFieldProps = {
 } & BaseTextFieldProps;
 
 function InputTextField({
-    title,
-    field,
-    subtitle,
-    control,
-    formFieldError,
-    isRequired = false,
-    ...textFieldProps
-}: InputTextFieldProps) {
+                            title,
+                            field,
+                            subtitle,
+                            control,
+                            formFieldError,
+                            isRequired = false,
+                            ...textFieldProps
+                        }: InputTextFieldProps) {
 
     return (
         <Box display={"flex"}>
@@ -73,6 +74,7 @@ interface PoemInputFormProps {
     setActiveStep: React.Dispatch<React.SetStateAction<CreationStage>>;
     setGeneratedData: React.Dispatch<React.SetStateAction<GeneratedData>>;
     setViewData: React.Dispatch<React.SetStateAction<ViewData>>;
+    generatedData: GeneratedData
 }
 
 interface GeneratePoemResponse {
@@ -114,65 +116,76 @@ const generatePoem = async (userInput: UserInput) => {
     })
 }
 
-interface GenerateImageResponse {
-    results: string[];
-}
-
-const generateImages = async (image: File | null) => {
-    if (image === null) {
-        return {results: []}
-    }
-
-    let data = new FormData()
-    data.append('file', image)
-
-    return fetch(`${BACKEND_URL}/generate/image`, {
-      method: 'POST',
-      body: data
-    }).then(response => response.json()).then((data: GenerateImageResponse) => {
-        return data
-    }).catch((error) => {
-        console.log(error)
-    })
-}
 
 export function PoemInputForm({
-    setActiveStep,
-    setGeneratedData,
-    setViewData
-}: PoemInputFormProps) {
+                                  setActiveStep,
+                                  setGeneratedData,
+                                  setViewData,
+                                  generatedData
+                              }: PoemInputFormProps) {
     const {control, handleSubmit, formState: {errors}} = useForm<UserInput>();
     const [image, setImage] = React.useState<File | null>(null);
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoadingPoem, setIsLoadingPoem] = React.useState(false);
     const [isError, setIsError] = React.useState(false);
+    const [generatedImages, isImageGenerationLoading] = useGenerateImages(image);
 
     const onSubmit = handleSubmit(async (data) => {
 
-        setIsLoading(true);
-        // generate image and generate poem in concurrently
-        const [generatedPoem, generatedImages] = await Promise.all([
-            generatePoem(data),
-            generateImages(image),
-        ]);
+        setIsLoadingPoem(true);
+        // generate image and generate poem
+        const generatedPoem = await generatePoem(data)
 
-        if (generatedPoem && generatedImages) {
-            setGeneratedData({
+        if (generatedPoem) {
+            setGeneratedData((prevState) => ({
+                ...prevState,
                 generatedPoems: generatedPoem.results,
-                generatedImages: generatedImages.results,
-            });
+            }));
             setViewData((prevState) => ({...prevState, sender: data.senderName}))
-            setIsLoading(false);
-            setActiveStep("edit")
+            setIsLoadingPoem(false);
         } else {
             setIsError(true);
-            setIsLoading(false)
+            setIsLoadingPoem(false)
         }
     });
+
+    useEffect(() => {
+        console.log("setting images useeffect")
+        setGeneratedData((prevState) => ({
+                ...prevState,
+                generatedImages: generatedImages
+            })
+        )
+    }, [generatedImages.length, setGeneratedData])
+
+    useEffect(() => {
+        if (image !== null && generatedData.generatedPoems.length > 0 && generatedData.generatedImages.length > 0) {
+            setActiveStep("edit")
+        }
+    }, [generatedData.generatedPoems.length, generatedData.generatedImages.length, image])
+
+    // clear previous data on load
+    // TODO: better save state when going back
+    useEffect(() => {
+        setGeneratedData((prevState) => ({
+            generatedPoems: [],
+            generatedImages: [],
+        }))
+    }, [])
+
+    // since image generation is happening in the background on upload only we don't
+    // show loading state when it's happening, only if the poem generation is
+    // already done
+    const isWaitingOnImageGeneration = isImageGenerationLoading && generatedData.generatedPoems.length > 0;
+    const isLoading = isLoadingPoem || isWaitingOnImageGeneration;
+
+    console.log(isLoading, generatedData, image, generatedImages)
+
 
     return (
         <form onSubmit={onSubmit}>
             <Stack direction={"column"} gap={"16px"} maxWidth={"600px"}>
-                <Typography variant={"h3"}>Input for poem</Typography>
+                <ImageUpload setImage={setImage}/>
+                <Typography variant={"h4"}>Input for poem</Typography>
                 <InputTextField
                     title={"From"}
                     field={"senderName"}
@@ -203,15 +216,15 @@ export function PoemInputForm({
                     control={control}
                     formFieldError={errors.fact}
                 />
-                <ImageUpload setImage={setImage}  />
-                <Box display={"flex"} flexDirection={"column"} alignItems={"center"} justifyContent={"center"} marginTop={"32px"}>
+                <Box display={"flex"} flexDirection={"column"} alignItems={"center"}
+                     justifyContent={"center"} marginTop={"32px"}>
                     <Typography>(Generation can take up to a minute)</Typography>
                     <Button
                         disabled={isLoading}
                         variant={"contained"}
                         type={"submit"}
                         size={"large"}
-                        style={{backgroundColor: isLoading ? "grey" : primaryColor }}
+                        style={{backgroundColor: isLoading ? "grey" : primaryColor}}
                     >
                         {!isLoading ?
                             <Typography>Generate</Typography> :
@@ -222,7 +235,8 @@ export function PoemInputForm({
                         }
                     </Button>
                 </Box>
-                <Typography variant={"body1"} color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
+                <Typography variant={"body1"}
+                            color={"error"}>{isError && "Something went wrong, please try again"}</Typography>
             </Stack>
         </form>
     )

@@ -22,7 +22,7 @@ export function PoemEditForm({
     setActiveStep,
     setViewData
 }: PoemEditFormProps) {
-    const {control, handleSubmit, setValue, watch} = useForm<EditDataProps>({
+    const {control, handleSubmit, setValue} = useForm<EditDataProps>({
         defaultValues: {
             selectedPoem: generatedData.generatedPoems[0].poem,
             selectedImage: generatedData.generatedImages[0] ?? null,
@@ -66,7 +66,7 @@ export function PoemEditForm({
                     onChange={handleChange}
                 >
                     {generatedData.generatedPoems.map((result, index) => (
-                            <ToggleButton value={result.style}>{result.style}</ToggleButton>
+                            <ToggleButton key={index} value={result.style}>{result.style}</ToggleButton>
                     ))}
                 </ToggleButtonGroup>
                 <Typography variant={"body1"}>You can still edit the poem if you wish</Typography>
