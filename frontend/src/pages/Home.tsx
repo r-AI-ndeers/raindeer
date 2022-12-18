@@ -4,18 +4,18 @@ import {ImageBackgroundLayout} from "../components/Layout";
 import {MOCK_CARD_ID} from "../consts";
 import ImageIcon from '@mui/icons-material/Image';
 import EditIcon from '@mui/icons-material/Edit';
+import {primaryColor} from "../index";
 
 
 export function Home() {
 
     return (
         <ImageBackgroundLayout>
-            <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"}
-                 alignItems={"center"} gap={"64px"}>
+            <Box maxWidth={"800px"} display={"flex"} flexDirection={"column"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
                 <Typography variant={"h1"}>
-                    <b>rAIndeers</b>
+                    <b>r<Typography variant="h1" display={"inline"} color={primaryColor}><b>AI</b></Typography>ndeers</b>
                 </Typography>
-                <Typography variant="h3">
+                <Typography variant="h3" textAlign={"center"}>
                     Create personalised cards for people dear to you with AI!
                 </Typography>
                 <Box display={"flex"} gap={"16px"}>
@@ -47,7 +47,7 @@ export function Home() {
                                 Photos
                             </Typography>
                         </Box>
-                        <Typography variant={"h5"} textAlign={"center"}>
+                        <Typography variant={"h6"} textAlign={"center"}>
                             Upload photo of you or your friends and have them modified for the Christmas spirit!
                         </Typography>
                     </Box>
@@ -58,7 +58,7 @@ export function Home() {
                                 Poem
                             </Typography>
                         </Box>
-                        <Typography variant={"h5"}>
+                        <Typography variant={"h6"}>
                             Our AI will generate a unique poem for you based on some facts about the person.
                         </Typography>
                     </Box>

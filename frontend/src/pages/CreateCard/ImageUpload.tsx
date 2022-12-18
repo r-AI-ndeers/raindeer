@@ -73,10 +73,14 @@ export function ImageUpload({setImage}: ImageUploadProps) {
     return (
         <Box display={"flex"} flexDirection={"column"} gap={"16px"}>
             <Typography variant={"h4"}><b>Upload a selfie</b></Typography>
-            <Typography variant={"body2"}>We will apply special Christmas filters to
+            <Typography variant={"body1"}>We will apply special Christmas filters to
                 make your image suit the Christmas spirit! It works best when you upload
                 a selfie of yourself or the person who you want to gift the card
-                to.</Typography>
+                to. <br/>
+                <Typography color="gray" variant={"body2"}>
+                    <i>We will delete all images from our server in the beginning of January 2023.</i>
+                </Typography>
+            </Typography>
             <Box>
                 {previewFile === null && (
                     // @ts-ignore
