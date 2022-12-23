@@ -138,7 +138,7 @@ def image_pipeline(img_filename, multithreading_flag=True):
         "cyberpunk christmas image. a person with santa hat, christmas tree, this pastel painting by the award - winning children's book author has interesting color contrasts, plenty of details and impeccable lighting. great resolution | hands:-1.0",
         "Pencil drawing, portrait and gifts, christmassy setting, beach boy | hands:-1.0",
         "Christmassy portrait, in a suit with santa clause hat, oil painting, christmas tree in back",
-        f"A person wearing a santa hat, by the beach, beachwear, great resolution",
+        f"A Person with a lot of christmas food, realistic, 4k",
         f"A handsome person ((wearing a santa hat and an ugly christmas sweater)), pixel art, surrounded by presents, space ship in the background",
     ]
     all_img_urls = []
