@@ -10,6 +10,7 @@ interface PoemEditFormProps {
     generatedData: GeneratedData,
     setActiveStep: React.Dispatch<React.SetStateAction<CreationStage>>;
     setViewData: React.Dispatch<React.SetStateAction<ViewData>>;
+    setGeneratedData: React.Dispatch<React.SetStateAction<GeneratedData>>;
 }
 
 interface EditDataProps {
@@ -20,11 +21,12 @@ interface EditDataProps {
 export function PoemEditForm({
     generatedData,
     setActiveStep,
-    setViewData
+    setViewData,
+    setGeneratedData
 }: PoemEditFormProps) {
     const {control, handleSubmit, setValue} = useForm<EditDataProps>({
         defaultValues: {
-            selectedPoem: generatedData.generatedPoems[0].poem,
+            selectedPoem: generatedData.generatedPoems[0]?.poem || "",
             selectedImage: generatedData.generatedImages[0] ?? null,
         }
     });
@@ -95,7 +97,13 @@ export function PoemEditForm({
                 <Box display={"flex"} justifyContent={"flex-end"} gap={"16px"}>
                     <Button
                         variant={"contained"}
-                        onClick={() => setActiveStep("input")}
+                        onClick={() => {
+                            setActiveStep("input")
+                            setGeneratedData({
+                                generatedPoems: [],
+                                generatedImages: [],
+                            })
+                        }}
                         size={"large"}
                         style={{backgroundColor: "gray"}}
                     >

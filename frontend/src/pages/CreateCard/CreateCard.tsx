@@ -47,6 +47,7 @@ export function CreateCard() {
                             setActiveStep={setActiveStep}
                             generatedData={generatedData}
                             setViewData={setViewData}
+                            setGeneratedData={setGeneratedData}
                         />
                     }
                     {activeStep === "preview" &&
